@@ -1,0 +1,4 @@
+ItemID,Name,Type,IconName,AttackPower,DefensePower,MaxStack,Description
+1001,Wood,Material,Resources_Icons_NO_Outline_24,0,0,99,나무 조각
+1002,Iron Ore,Material,Resources_Icons_NO_Outline_2,0,0,99,흑연 철광석
+2001,Bronze Sword,Weapon,Tool_Icons_NO_Outline_4,12,0,1,청동 검

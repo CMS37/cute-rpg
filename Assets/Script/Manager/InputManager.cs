@@ -1,26 +1,25 @@
 using UnityEngine;
+using System;
 
 namespace Managers
 {
+    [DefaultExecutionOrder(-100)]
     public class InputManager : MonoBehaviour
     {
-        private Vector2 moveInput;
-
-        private void Update()
-        {
-            float hor = Input.GetAxisRaw("Horizontal");
-            float ver = Input.GetAxisRaw("Vertical");
-            Vector2 raw = new Vector2(hor, ver);
-
-            if (raw.sqrMagnitude > 1f)
-                raw.Normalize();
-
-            moveInput = raw;
-        }
+        public event Action onInventoryToggle;
 
         public Vector2 GetMovement()
         {
-            return moveInput;
+            return new Vector2(
+                Input.GetAxisRaw("Horizontal"),
+                Input.GetAxisRaw("Vertical")
+            ).normalized;
+        }
+
+        private void Update()
+        {
+            if (Input.GetKeyDown(KeyCode.I))
+                onInventoryToggle?.Invoke();
         }
     }
 }

@@ -51,7 +51,7 @@ public class PlayerController : MonoBehaviour
 
     private void Update()
     {
-        movement = InputManager.Instance.GetMovement();
+        movement = GameManager.Instance.inputManager.GetMovement();
 
         float speedValue = Mathf.Abs(movement.x) + Mathf.Abs(movement.y);
         animator.SetFloat("Speed", speedValue);

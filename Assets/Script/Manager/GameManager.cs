@@ -9,8 +9,8 @@ namespace Managers
 
         [Header("Core Managers")]
         public InputManager     inputManager;
-        // public UIManager        uiManager;
-        // public InventoryManager inventoryManager;
+        public InventoryManager inventoryManager;
+        public UIManager        uiManager;
         // public QuestManager     questManager;
         // public MonsterManager   monsterManager;
         // public SaveLoadManager  saveLoadManager;
@@ -34,19 +34,21 @@ namespace Managers
                     inputManager = imGO.AddComponent<InputManager>();
                 }
 
-                // if (uiManager == null)
-                // {
-                //     var uiGO = new GameObject("UIManager");
-                //     uiGO.transform.parent = this.transform;
-                //     uiManager = uiGO.AddComponent<UIManager>();
-                // }
+                if (inventoryManager == null)
+                {
+                    var invGO = new GameObject("InventoryManager");
+                    invGO.transform.parent = this.transform;
+                    inventoryManager = invGO.AddComponent<InventoryManager>();
+                }
+                inventoryManager.itemDatabase = Resources.Load<ItemDatabase>("ItemDatabase");                
 
-                // if (inventoryManager == null)
-                // {
-                //     var invGO = new GameObject("InventoryManager");
-                //     invGO.transform.parent = this.transform;
-                //     inventoryManager = invGO.AddComponent<InventoryManager>();
-                // }
+                if (uiManager == null)
+                {
+                    var uiGO = new GameObject("UIManager");
+                    uiGO.transform.parent = this.transform;
+                    uiManager = uiGO.AddComponent<UIManager>();
+                }
+
 
                 // if (questManager == null)
                 // {

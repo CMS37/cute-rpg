@@ -13,9 +13,10 @@ namespace Managers
 
         private void OnTriggerEnter2D(Collider2D other)
         {
-            if (!other.CompareTag("Player"))
+            if (!other.CompareTag("Player")) 
                 return;
-
+            Debug.Log("MapTransition: 플레이어가 맵 전환 트리거에 진입했습니다.");
+            Debug.Log($"MapTransition: 다음 씬 이름: {nextSceneName}, 스폰 위치: {spawnPositionInNextScene}");
             if (string.IsNullOrEmpty(nextSceneName))
             {
                 Debug.LogError("MapTransition: nextSceneName이 설정되지 않았습니다!");
