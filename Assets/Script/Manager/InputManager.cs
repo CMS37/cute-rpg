@@ -1,12 +1,12 @@
 using UnityEngine;
 using System;
 
-namespace Managers
+namespace Game.Managers
 {
     [DefaultExecutionOrder(-100)]
     public class InputManager : MonoBehaviour
     {
-        public event Action onInventoryToggle;
+        public event Action OnInventoryToggle;
 
         public Vector2 GetMovement()
         {
@@ -19,7 +19,7 @@ namespace Managers
         private void Update()
         {
             if (Input.GetKeyDown(KeyCode.I))
-                onInventoryToggle?.Invoke();
+                OnInventoryToggle?.Invoke();
         }
     }
 }

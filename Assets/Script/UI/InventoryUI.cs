@@ -1,52 +1,78 @@
 using UnityEngine;
 using UnityEngine.UI;
-using TMPro;                  // ← 추가
+using TMPro;
 using System.Collections.Generic;
-using Managers;
+using Game.Managers;
 
-public class InventoryUI : MonoBehaviour
+namespace Game.UI
 {
-    [Header("UI References")]
-    public GameObject panel;
-    public GameObject bagSlotPrefab;
-    public Transform bagSlotParent;
 
-    private void Start()
+    public class InventoryUI : MonoBehaviour
     {
-        panel.SetActive(false);
-        GameManager.Instance.inputManager.onInventoryToggle += ToggleInventory;
-    }
-    private void OnDestroy()
-    {
-        GameManager.Instance.inputManager.onInventoryToggle -= ToggleInventory;
-    }
-    private void ToggleInventory()
-    {
-        panel.SetActive(!panel.activeSelf);
-        if (panel.activeSelf) RefreshBag();
-    }
+        [Header("UI References")]
+        [Tooltip("인벤토리 전체 패널")]      [SerializeField] private GameObject panel;
+        [Tooltip("슬롯 프리팹")]
+        [SerializeField] private GameObject slotPrefab;
+        [Tooltip("슬롯을 담을 컨테이너")]
+        [SerializeField] private Transform bagSlotParent;
 
-    public void RefreshBag()
-    {
-        foreach (Transform t in bagSlotParent)
-            Destroy(t.gameObject);
+        [Header("Grid Settings")]
+        [Tooltip("가로 슬롯 개수")]
+        [SerializeField] private int bagColumns = 5;
+        [Tooltip("세로 슬롯 개수")]
+        [SerializeField] private int bagRows    = 5;
 
-        var inv = InventoryManager.Instance.GetInventory();
-        foreach (var (data, count) in inv)
+        private void Start()
         {
-            var slot = Instantiate(bagSlotPrefab, bagSlotParent);
-            // 아이콘 세팅
-            slot.transform.Find("Icon").GetComponent<Image>().sprite = data.icon;
+            panel.SetActive(false);
+            GameManager.Instance.InputManager.OnInventoryToggle += ToggleInventory;
+        }
 
-            // TextMeshProUGUI로 가져오기
-            var countText = slot.transform.Find("Count")
-                                 .GetComponent<TextMeshProUGUI>();
-            countText.text = count.ToString();
+        private void OnDestroy()
+        {
+            if (GameManager.Instance != null)
+                GameManager.Instance.InputManager.OnInventoryToggle -= ToggleInventory;
+        }
 
-            // 클릭 이벤트
-            string id = data.id;
-            slot.GetComponent<Button>().onClick.AddListener(() =>
-                InventoryManager.Instance.Use(id));
+        private void ToggleInventory()
+        {
+            panel.SetActive(!panel.activeSelf);
+            if (panel.activeSelf)
+                RefreshBag();
+        }
+
+        public void RefreshBag()
+        {
+            foreach (Transform child in bagSlotParent)
+                Destroy(child.gameObject);
+
+            var inv = InventoryManager.Instance.GetInventory();
+            int capacity = bagColumns * bagRows;
+
+            for (int i = 0; i < capacity; i++)
+            {
+                var slot = Instantiate(slotPrefab, bagSlotParent);
+                var iconImage = slot.transform.Find("Icon").GetComponent<Image>();
+                var countText = slot.transform.Find("Count").GetComponent<TextMeshProUGUI>();
+                var button    = slot.GetComponent<Button>();
+
+                if (i < inv.Count)
+                {
+                    var (data, count) = inv[i];
+                    iconImage.enabled = true;
+                    iconImage.sprite  = data.Icon;
+                    countText.text    = count.ToString();
+
+                    string id = data.Id;
+                    button.onClick.AddListener(() => InventoryManager.Instance.Use(id));
+                }
+                else
+                {
+                    iconImage.enabled = false;
+                    countText.text    = string.Empty;
+                    button.onClick.RemoveAllListeners();
+                }
+            }
         }
     }
 }

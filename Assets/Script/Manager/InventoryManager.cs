@@ -1,28 +1,33 @@
 using System.Collections.Generic;
 using UnityEngine;
+using Game.Data;
 
-namespace Managers
+namespace Game.Managers
 {
     public class InventoryManager : MonoBehaviour
     {
         public static InventoryManager Instance { get; private set; }
 
         [Header("Item Database")]
-        public ItemDatabase itemDatabase;
+        [SerializeField] private ItemDatabase itemDatabase;
 
-        private Dictionary<string,int> items = new Dictionary<string,int>();
+        public void SetItemDatabase(Game.Data.ItemDatabase db)
+        {
+            itemDatabase = db;
+        }
+
+        private readonly Dictionary<string, int> items = new Dictionary<string, int>();
 
         private void Awake()
         {
             if (Instance == null)
             {
                 Instance = this;
-
                 if (itemDatabase == null)
                 {
                     itemDatabase = Resources.Load<ItemDatabase>("ItemDatabase");
                     if (itemDatabase == null)
-                        Debug.LogError("[InventoryManager] Failed to load ItemDatabase from Resources/ItemDatabase.asset");
+                        Debug.LogError("[InventoryManager] ItemDatabase를 로드하지 못했습니다.");
                 }
             }
             else
@@ -31,21 +36,20 @@ namespace Managers
             }
         }
 
-        public void Add(string itemId, int qty = 1)
+        public void Add(string itemId, int quantity = 1)
         {
-            if (itemDatabase == null)
+            if (itemDatabase == null) return;
+            var data = itemDatabase.Get(itemId);
+            if (data == null)
             {
-                Debug.LogError("[InventoryManager] itemDatabase is null!");
+                Debug.LogWarning($"[InventoryManager] 알 수 없는 아이템 ID: {itemId}");
                 return;
             }
 
-            if (itemDatabase.Get(itemId) == null)
-            {
-                Debug.LogWarning($"[Inventory] Unknown Item ID: {itemId}");
-                return;
-            }
-            if (items.ContainsKey(itemId)) items[itemId] += qty;
-            else items[itemId] = qty;
+            if (items.ContainsKey(itemId))
+                items[itemId] += quantity;
+            else
+                items[itemId] = quantity;
 
             UIManager.Instance?.RefreshInventoryUI();
         }
@@ -56,7 +60,8 @@ namespace Managers
                 return false;
 
             items[itemId]--;
-            if (items[itemId] == 0) items.Remove(itemId);
+            if (items[itemId] == 0)
+                items.Remove(itemId);
 
             UIManager.Instance?.RefreshInventoryUI();
             return true;
@@ -66,7 +71,10 @@ namespace Managers
         {
             var list = new List<(ItemData, int)>();
             foreach (var kv in items)
-                list.Add((itemDatabase.Get(kv.Key), kv.Value));
+            {
+                var data = itemDatabase.Get(kv.Key);
+                list.Add((data, kv.Value));
+            }
             return list;
         }
     }

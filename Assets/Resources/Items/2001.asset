@@ -10,13 +10,13 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 87347d10ca9411e43ac2f8060e19affa, type: 3}
-  m_Name: 1001_Wood
+  m_Name: 2001
   m_EditorClassIdentifier: 
-  id: 1001
-  itemName: Wood
-  type: 0
-  icon: {fileID: -772880015, guid: bb8da052b3deba04597a46029f20a6c5, type: 3}
-  attackPower: 0
+  id: 2001
+  itemName: Bronze Sword
+  type: 1
+  icon: {fileID: -325957350, guid: e4a2f2a1ce80e7c4490733b32664d514, type: 3}
+  attackPower: 12
   defensePower: 0
-  maxStack: 99
-  description: "\uB098\uBB34 \uC870\uAC01"
+  maxStack: 1
+  description: "\uCCAD\uB3D9 \uAC80"

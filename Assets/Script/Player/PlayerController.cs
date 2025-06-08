@@ -1,73 +1,70 @@
 using UnityEngine;
 using UnityEngine.Tilemaps;
-using Managers;  // InputManager를 사용하기 위해 네임스페이스 포함
+using Game.Managers;
 
-[RequireComponent(typeof(Rigidbody2D))]
-[RequireComponent(typeof(Animator))]
-public class PlayerController : MonoBehaviour
+namespace Game.Player
 {
-    [Header("이동 속도")]
-    public float moveSpeed = 7.0f;
-
-    [Header("경계 추출할 Tilemap")]
-    public Tilemap groundTilemap;
-
-    private float pixelsPerUnit = 16f;
-    private Rigidbody2D rb;
-    private Animator animator;
-    private Vector2 movement;
-
-    private Vector2 minBounds;
-    private Vector2 maxBounds;
-
-    private void Awake()
+    [RequireComponent(typeof(Rigidbody2D)), RequireComponent(typeof(Animator))]
+    public class PlayerController : MonoBehaviour
     {
-        rb = GetComponent<Rigidbody2D>();
-        animator = GetComponent<Animator>();
-    }
+        [Header("이동 속도")]
+        [SerializeField] private float moveSpeed = 7f;
 
-    private void Start()
-    {
-        if (groundTilemap == null)
+        [Header("맵 경계 Tilemap")]
+        [SerializeField] private Tilemap groundTilemap;
+
+        private Rigidbody2D rb;
+        private Animator animator;
+        private Vector2 movement;
+        private float ppu = 16f;
+
+        private Vector2 minBounds;
+        private Vector2 maxBounds;
+
+        private void Awake()
         {
-            Debug.LogError("PlayerController: groundTilemap이 할당되지 않았습니다.");
-            return;
+            rb = GetComponent<Rigidbody2D>();
+            animator = GetComponent<Animator>();
         }
 
-        Bounds localBounds = groundTilemap.localBounds;
-        Vector3 tilemapPos = groundTilemap.transform.position;
-        Vector3 worldMin = localBounds.min + tilemapPos;
-        Vector3 worldMax = localBounds.max + tilemapPos;
+        private void Start()
+        {
+            if (groundTilemap == null)
+            {
+                Debug.LogError("[PlayerController] groundTilemap이 할당되지 않았습니다.");
+                return;
+            }
 
-        Vector3 cellSize = groundTilemap.cellSize;
-        float extraShrinkX = 0.5f;
-        float baseShrinkX  = cellSize.x;
-        float shrinkX      = baseShrinkX + extraShrinkX;
-        float shrinkY      = cellSize.y;
+            var local = groundTilemap.localBounds;
+            var pos   = groundTilemap.transform.position;
+            var worldMin = local.min + pos;
+            var worldMax = local.max + pos;
 
-        minBounds = new Vector2(worldMin.x + shrinkX, worldMin.y + shrinkY);
-        maxBounds = new Vector2(worldMax.x - shrinkX, worldMax.y - shrinkY);
-    }
+            var cell = groundTilemap.cellSize;
+            float shrinkX = cell.x + 0.5f;
+            float shrinkY = cell.y;
 
-    private void Update()
-    {
-        movement = GameManager.Instance.inputManager.GetMovement();
+            minBounds = new Vector2(worldMin.x + shrinkX, worldMin.y + shrinkY);
+            maxBounds = new Vector2(worldMax.x - shrinkX, worldMax.y - shrinkY);
+        }
 
-        float speedValue = Mathf.Abs(movement.x) + Mathf.Abs(movement.y);
-        animator.SetFloat("Speed", speedValue);
-    }
+        private void Update()
+        {
+            movement = GameManager.Instance.InputManager.GetMovement();
+            animator.SetFloat("Speed", Mathf.Abs(movement.x) + Mathf.Abs(movement.y));
+        }
 
-    private void FixedUpdate()
-    {
-        Vector2 rawTarget = rb.position + movement * moveSpeed * Time.fixedDeltaTime;
-        float snappedX = Mathf.Round(rawTarget.x * pixelsPerUnit) / pixelsPerUnit;
-        float snappedY = Mathf.Round(rawTarget.y * pixelsPerUnit) / pixelsPerUnit;
-        Vector2 pixelPerfectTarget = new Vector2(snappedX, snappedY);
+        private void FixedUpdate()
+        {
+            var raw = rb.position + movement * moveSpeed * Time.fixedDeltaTime;
+            var snap = new Vector2(
+                Mathf.Round(raw.x * ppu) / ppu,
+                Mathf.Round(raw.y * ppu) / ppu);
 
-        float clampedX = Mathf.Clamp(pixelPerfectTarget.x, minBounds.x, maxBounds.x);
-        float clampedY = Mathf.Clamp(pixelPerfectTarget.y, minBounds.y, maxBounds.y);
-        Vector2 clampedPos = new Vector2(clampedX, clampedY);
+            float x = Mathf.Clamp(snap.x, minBounds.x, maxBounds.x);
+            float y = Mathf.Clamp(snap.y, minBounds.y, maxBounds.y);
 
-        rb.MovePosition(clampedPos);
+            rb.MovePosition(new Vector2(x, y));
+        }
     }
 }

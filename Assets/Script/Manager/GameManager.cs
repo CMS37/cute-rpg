@@ -1,22 +1,29 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-namespace Managers
+namespace Game.Managers
 {
     public class GameManager : MonoBehaviour
     {
         public static GameManager Instance { get; private set; }
 
         [Header("Core Managers")]
-        public InputManager     inputManager;
-        public InventoryManager inventoryManager;
-        public UIManager        uiManager;
-        // public QuestManager     questManager;
-        // public MonsterManager   monsterManager;
-        // public SaveLoadManager  saveLoadManager;
+        [SerializeField] private InputManager inputManager;
+        [SerializeField] private InventoryManager inventoryManager;
+        [SerializeField] private UIManager uiManager;
+        // [SerializeField] private QuestManager questManager;
+        // [SerializeField] private MonsterManager monsterManager;
+        // [SerializeField] private SaveLoadManager saveLoadManager;
 
-        [HideInInspector] public string nextSceneToLoad = "";
-        [HideInInspector] public Vector2 nextSpawnPosition = Vector2.zero;
+        public InputManager InputManager => inputManager;
+        public InventoryManager InventoryManager => inventoryManager;
+        public UIManager UIManager => uiManager;
+
+        [Header("Scene Transition")]
+        [Tooltip("다음 로드할 씬 이름")]
+        [SerializeField] private string nextSceneToLoad = "";
+        [Tooltip("씬 전환 후 플레이어 스폰 위치")]
+        [SerializeField] private Vector2 nextSpawnPosition = Vector2.zero;
 
         private void Awake()
         {
@@ -25,51 +32,18 @@ namespace Managers
                 Instance = this;
                 DontDestroyOnLoad(gameObject);
 
+                // 씬 로드 이벤트 등록
                 SceneManager.sceneLoaded += OnSceneLoaded;
 
-                if (inputManager == null)
-                {
-                    var imGO = new GameObject("InputManager");
-                    imGO.transform.parent = this.transform;
-                    inputManager = imGO.AddComponent<InputManager>();
-                }
+                // Core 매니저들 생성 및 자식으로 배치
+                CreateManager(ref inputManager,  "InputManager");
+                CreateManager(ref inventoryManager, "InventoryManager");
+                CreateManager(ref uiManager,        "UIManager");
+                //CreateManager(ref questManager,     "QuestManager");
+                //CreateManager(ref monsterManager,   "MonsterManager");
+                //CreateManager(ref saveLoadManager,  "SaveLoadManager");
 
-                if (inventoryManager == null)
-                {
-                    var invGO = new GameObject("InventoryManager");
-                    invGO.transform.parent = this.transform;
-                    inventoryManager = invGO.AddComponent<InventoryManager>();
-                }
-                inventoryManager.itemDatabase = Resources.Load<ItemDatabase>("ItemDatabase");                
-
-                if (uiManager == null)
-                {
-                    var uiGO = new GameObject("UIManager");
-                    uiGO.transform.parent = this.transform;
-                    uiManager = uiGO.AddComponent<UIManager>();
-                }
-
-
-                // if (questManager == null)
-                // {
-                //     var qGO = new GameObject("QuestManager");
-                //     qGO.transform.parent = this.transform;
-                //     questManager = qGO.AddComponent<QuestManager>();
-                // }
-
-                // if (monsterManager == null)
-                // {
-                //     var mGO = new GameObject("MonsterManager");
-                //     mGO.transform.parent = this.transform;
-                //     monsterManager = mGO.AddComponent<MonsterManager>();
-                // }
-
-                // if (saveLoadManager == null)
-                // {
-                //     var sGO = new GameObject("SaveLoadManager");
-                //     sGO.transform.parent = this.transform;
-                //     saveLoadManager = sGO.AddComponent<SaveLoadManager>();
-                // }
+                inventoryManager.SetItemDatabase(Resources.Load<Game.Data.ItemDatabase>("ItemDatabase"));
             }
             else
             {
@@ -77,24 +51,45 @@ namespace Managers
             }
         }
 
+        private void OnDestroy()
+        {
+            SceneManager.sceneLoaded -= OnSceneLoaded;
+        }
+
         private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
         {
             if (!string.IsNullOrEmpty(nextSceneToLoad) && scene.name == nextSceneToLoad)
             {
-                GameObject player = GameObject.FindGameObjectWithTag("Player");
+                var player = GameObject.FindGameObjectWithTag("Player");
                 if (player != null)
                 {
-                    Vector3 newPos = new Vector3(nextSpawnPosition.x, nextSpawnPosition.y, player.transform.position.z);
-                    player.transform.position = newPos;
+                    var pos = player.transform.position;
+                    player.transform.position = new Vector3(
+                        nextSpawnPosition.x,
+                        nextSpawnPosition.y,
+                        pos.z);
                 }
-                nextSceneToLoad = "";
+                nextSceneToLoad   = "";
                 nextSpawnPosition = Vector2.zero;
             }
         }
 
-        private void OnDestroy()
+        private void CreateManager<T>(ref T field, string gameObjectName) where T : MonoBehaviour
         {
-            SceneManager.sceneLoaded -= OnSceneLoaded;
+            if (field == null)
+            {
+                var go = new GameObject(gameObjectName);
+                go.transform.SetParent(transform, false);
+                field = go.AddComponent<T>();
+            }
+        }
+
+        public void SetNextScene(string sceneName, Vector2 spawnPos)
+        {
+            nextSceneToLoad   = sceneName;
+            nextSpawnPosition = spawnPos;
+
+            Game.System.SceneTransition.Instance.FadeToScene(sceneName);
         }
     }
 }

@@ -2,72 +2,109 @@ using UnityEngine;
 using UnityEditor;
 using System.IO;
 using System.Linq;
+using System.Collections.Generic;
+using System;
+using Game.Data;
+using Game.Utils;
 
-public class ItemDataImporter
+
+namespace Game.Editor
 {
-    const string CSV_PATH = "Assets/Data/items.csv";
-    const string OUTPUT_FOLDER = "Assets/ScriptableObjects/Items";
-
-    [MenuItem("Tools/Import/Items from CSV")]
-    public static void ImportFromCSV()
+    public static class ItemDataImporter
     {
-        if (!File.Exists(CSV_PATH))
+        private const string ItemsFolder = "Assets/Resources/Items";
+        private const string DatabasePath = "Assets/Resources/ItemDatabase.asset";
+
+        [MenuItem("Tools/Import/Items From CSV & Update DB")]
+        public static void ImportAndUpdateDatabase()
         {
-            Debug.LogError($"[{nameof(ItemDataImporter)}] CSV 파일을 찾을 수 없습니다: {CSV_PATH}");
-            return;
-        }
+            // 1) CSV 파일 선택
+            string csvPath = EditorUtility.OpenFilePanel("CSV 파일 선택", "", "csv");
+            if (string.IsNullOrEmpty(csvPath))
+                return;
 
-        if (!AssetDatabase.IsValidFolder(OUTPUT_FOLDER))
-            AssetDatabase.CreateFolder("Assets/ScriptableObjects", "Items");
+            // 2) CSV 파일 읽기
+            var lines = File.ReadAllLines(csvPath);
+            if (lines.Length <= 1)
+            {
+                Debug.LogWarning("[ItemDataImporter] CSV 파일에 데이터가 없습니다.");
+                return;
+            }
 
-        var lines = File.ReadAllLines(CSV_PATH)
-                        .Where(l => !string.IsNullOrWhiteSpace(l))
-                        .ToArray();
-        if (lines.Length < 2)
-        {
-            Debug.LogWarning("CSV에 데이터가 없습니다.");
-            return;
-        }
+            // 3) 아이템 폴더 생성 또는 확인
+            EnsureFolderExists(ItemsFolder);
+            Debug.Log("[ItemDataImporter] CSV에서 아이템을 임포트합니다...");
 
-        var header = lines[0].Split(',');
+            // 4) 데이터 파싱 및 ScriptableObject 생성/업데이트
+            foreach (var line in lines.Skip(1))
+            {
+                if (string.IsNullOrWhiteSpace(line)) continue;
+                var cols = line.Split(new[] { ',', '\t' }, StringSplitOptions.RemoveEmptyEntries);
 
-        for (int i = 1; i < lines.Length; i++)
-        {
-            var cols = lines[i].Split(',');
-            if (cols.Length != header.Length) continue;
+                if (cols.Length < 8) continue;
 
-            string id            = cols[0];
-            string name          = cols[1];
-            string typeStr       = cols[2];
-            string iconName      = cols[3];
-            int    atk           = int.Parse(cols[4]);
-            int    def           = int.Parse(cols[5]);
-            int    maxStack      = int.Parse(cols[6]);
-            string desc          = cols[7];
+                string id   = cols[0].Trim();
+                string name = cols[1].Trim();
+                string type = cols[2].Trim();
+                string icon = cols[3].Trim();
+                int atk     = int.Parse(cols[4]);
+                int def     = int.Parse(cols[5]);
+                int maxSt   = int.Parse(cols[6]);
+                string desc = cols[7].Trim();
 
-            string assetPath = $"{OUTPUT_FOLDER}/{id}_{name}.asset";
+                string assetPath = Path.Combine(ItemsFolder, id + ".asset");
+                var data = AssetDatabase.LoadAssetAtPath<ItemData>(assetPath) ?? ScriptableObject.CreateInstance<ItemData>();
 
-            var data = AssetDatabase.LoadAssetAtPath<ItemData>(assetPath)
-                      ?? ScriptableObject.CreateInstance<ItemData>();
+                // 필드 할당
+                data.Id           = id;
+                data.Name         = name;
+                data.Type         = (ItemType)Enum.Parse(typeof(ItemType), type);
+                data.AttackPower  = atk;
+                data.DefensePower = def;
+                data.MaxStack     = maxSt;
+                data.Description  = desc;
+                data.Icon         = IconLoader.GetIcon(icon);
 
-            data.id           = id;
-            data.itemName     = name;
-            data.type         = System.Enum.TryParse<ItemType>(typeStr, out var t) ? t : ItemType.Material;
-            data.attackPower  = atk;
-            data.defensePower = def;
-            data.maxStack     = maxStack;
-            data.description  = desc;
-
-            data.icon = IconLoader.GetIcon(iconName);
-
-            if (AssetDatabase.Contains(data))
+                // 에셋 생성 또는 갱신
+                if (!File.Exists(assetPath))
+                    AssetDatabase.CreateAsset(data, assetPath);
                 EditorUtility.SetDirty(data);
-            else
-                AssetDatabase.CreateAsset(data, assetPath);
+            }
+
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
+
+            // 5) 데이터베이스 갱신
+            UpdateDatabase();
+            Debug.Log("[ItemDataImporter] 아이템 임포트 및 데이터베이스 업데이트 완료.");
         }
 
-        AssetDatabase.SaveAssets();
-        AssetDatabase.Refresh();
-        Debug.Log($"[{nameof(ItemDataImporter)}] 아이템 임포트 완료: {lines.Length-1}개");
+        private static void EnsureFolderExists(string path)
+        {
+            if (!AssetDatabase.IsValidFolder(path))
+            {
+                var parent = Path.GetDirectoryName(path);
+                var name   = Path.GetFileName(path);
+                AssetDatabase.CreateFolder(parent, name);
+            }
+        }
+
+        private static void UpdateDatabase()
+        {
+            var db = AssetDatabase.LoadAssetAtPath<ItemDatabase>(DatabasePath) ?? ScriptableObject.CreateInstance<ItemDatabase>();
+            var guids = AssetDatabase.FindAssets("t:ItemData", new[] { ItemsFolder });
+            var items = guids
+                .Select(guid => AssetDatabase.LoadAssetAtPath<ItemData>(AssetDatabase.GUIDToAssetPath(guid)))
+                .Where(item => item != null)
+                .ToList();
+
+            db.AllItems = items;
+
+            if (!File.Exists(DatabasePath))
+                AssetDatabase.CreateAsset(db, DatabasePath);
+            EditorUtility.SetDirty(db);
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
+        }
     }
 }

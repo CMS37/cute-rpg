@@ -1,19 +1,28 @@
 using UnityEngine;
 
-public class UIManager : MonoBehaviour
+namespace Game.Managers
 {
-    public static UIManager Instance { get; private set; }
-    private void Awake()
+    public class UIManager : MonoBehaviour
     {
-		if (Instance == null)
-		{
-			Instance = this;
-		}
-        else Destroy(gameObject);
-    }
-    public void RefreshInventoryUI()
-    {
-        var ui = FindObjectOfType<InventoryUI>();
-        if (ui!=null) ui.RefreshBag();
+        public static UIManager Instance { get; private set; }
+
+        private void Awake()
+        {
+            if (Instance == null)
+            {
+                Instance = this;
+            }
+            else
+            {
+                Destroy(gameObject);
+            }
+        }
+
+        public void RefreshInventoryUI()
+        {
+            var ui = FindObjectOfType<Game.UI.InventoryUI>();
+            if (ui != null)
+                ui.RefreshBag();
+        }
     }
 }

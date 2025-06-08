@@ -1,37 +1,39 @@
 using UnityEngine;
 using System.Collections.Generic;
 
-public static class IconLoader
+namespace Game.Utils
 {
-    private static Dictionary<string, Sprite> _cache;
-
-    public static Sprite GetIcon(string iconName)
+    public static class IconLoader
     {
-        if (_cache == null)
+        private static Dictionary<string, Sprite> cache;
+
+        public static Sprite GetIcon(string iconName)
         {
-            _cache = new Dictionary<string, Sprite>();
-            // PNG 파일 이름들 (확장자 제외)
-            string[] sheets = new[] {
-                "Icons/Food_Icons_NO_Outline",
-                "Icons/Other_Icons_NO_Outline",
-                "Icons/Resources_Icons_NO_Outline",
-                "Icons/Tool_Icons_NO_Outline"
-            };
-            foreach (var sheet in sheets)
+            if (cache == null)
             {
-                var sprites = Resources.LoadAll<Sprite>(sheet);
-                foreach (var sp in sprites)
+                cache = new Dictionary<string, Sprite>();
+                string[] sheets = new[] {
+                    "Icons/Food_Icons_NO_Outline",
+                    "Icons/Other_Icons_NO_Outline",
+                    "Icons/Resources_Icons_NO_Outline",
+                    "Icons/Tool_Icons_NO_Outline"
+                };
+                foreach (var sheet in sheets)
                 {
-                    if (!_cache.ContainsKey(sp.name))
-                        _cache.Add(sp.name, sp);
+                    var sprites = Resources.LoadAll<Sprite>(sheet);
+                    foreach (var sp in sprites)
+                    {
+                        if (!cache.ContainsKey(sp.name))
+                            cache.Add(sp.name, sp);
+                    }
                 }
             }
+
+            if (cache.TryGetValue(iconName, out var sprite))
+                return sprite;
+
+            Debug.LogWarning($"[IconLoader] '{iconName}' 아이콘을 찾을 수 없습니다.");
+            return null;
         }
-
-        if (_cache.TryGetValue(iconName, out var icon))
-            return icon;
-
-        Debug.LogWarning($"IconLoader: '{iconName}' 아이콘을 찾을 수 없습니다.");
-        return null;
     }
 }

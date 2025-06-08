@@ -1,36 +1,59 @@
-# 유니티 2D Top-Down RPG
+# 유니티 2D Top-Down RPG 
 
 ## 프로젝트 개요
-- **목표**: 2D Top-Down 시점의 RPG 기본 틀을 Unity 2022.3.42f1 기준으로 구현  
+- **목표**: 2D Top-Down 시점의 RPG 기본 틀을 구현해보기 
 - **핵심 흐름**:  
-  1. 게임 시작 → 플레이어 캐릭터 생성/튜토리얼  
-  2. 마을 및 채집 맵(숲/광산/목장)  
+  1. 게임 시작 -> 홈씬에서 기본적인 테스트 -> 이동시 CrossMap으로 이동
+  2. CrossMap씬 → 동/남/북 경로별 채집 맵 (광산, 숲 등)
   3. 던전 탐험 및 파밍  
 - **아트스타일**: 16×16 픽셀 단위 픽셀 아트(픽셀 퍼펙트)  
 
 ---
 
 ## 프로젝트 구조 및 설계 방향
-	 ```
+	```
 	/cute-rpg
 	├─ Assets
-	│ ├─ Scenes
-	│ │ ├─ Home.unity # 홈 씬 (타일맵 + 플레이어 배치)
-	│ │ └─ 숲, 광산, 바다, 던전 등 각종 씬 추가 예정 
-	│ ├─ Sprites
-	│ │ ├─ Tiles # 타일맵 에셋 (Ground / Obstacle)
-	│ │ └─ Player # 플레이어 스프라이트(Idle, Run)
-	│ ├─ Scripts
-	│ │ ├─ GameManager.cs # 전역 싱글턴 매니저
-	│ │ │	├─ InputManager.cs # 인풋 매니저
-	│ │ │   └─ ui,monster,quest 등 구현 예정
-	│ │ ├─ PlayerController.cs # 플레이어 이동/애니메이션 제어
-	│ │ └─ CameraFollow.cs # 카메라 부드럽게 따라오기
-	│ ├─ Prefabs
-	│ │ └─ Player.prefab # 플레이어 프리팹
-	│ └─ ProjectSettings # Unity 프로젝트 설정
+	│  ├─ Scenes
+	│  │   ├─ Home.unity
+	│  │   ├─ CrossMap.unity
+	│  │   ├─ Mine.unity
+	│  │   └─ ... (Forest, Dungeon, etc.)
+	│  ├─ Sprites
+	│  │   ├─ Tiles (Ground, Obstacle)
+	│  │   └─ Player (Base, Hair, Body, ...)
+	│  ├─ Scripts
+	│  │   ├─ Data
+	│  │   │   ├─ ItemData.cs
+	│  │   │   └─ ItemDatabase.cs
+	│  │   ├─ Editor
+	│  │   │   └─ ItemDataImporter.cs
+	│  │   ├─ Managers
+	│  │   │   ├─ GameManager.cs
+	│  │   │   ├─ InputManager.cs
+	│  │   │   ├─ InventoryManager.cs
+	│  │   │   └─ UIManager.cs
+	│  │   ├─ World
+	│  │   │   ├─ ItemPickup.cs
+	│  │   │   └─ MapTransition.cs
+	│  │   ├─ UI
+	│  │   │   └─ InventoryUI.cs
+	│  │   ├─ Player
+	│  │   │   └─ PlayerController.cs
+	│  │   ├─ Camera
+	│  │   │   └─ CameraFollow.cs
+	│  │   ├─ System
+	│  │   │   └─ SceneTransition.cs
+	│  │   └─ Utils
+	│  │       └─ IconLoader.cs
+	│  ├─ Prefabs
+	│  │   ├─ Player.prefab
+	│  │   └─ UI (InventorySlot, InventoryCanvas, ...)
+	│  └─ Resources
+	│      ├─ Items (SO 에셋)
+	│      └─ ItemDatabase.asset
 	└─ README.md
-	 ```
+	```
 
 ### 1. 타일맵 기반 월드 구성
 - **GroundTilemap**: 바닥 용도, Collider 제거  
@@ -104,9 +127,8 @@ public class GameManager : MonoBehaviour
 - 오브젝트 애니메이션 추가 (후순위)
 
 - **매니저**
-- 인벤토리
-- UI
+- 인벤토리 - 진행중
+- UI - 진행중
 - 몬스터
 - 세이브&로드
 - 퀘스트
-
