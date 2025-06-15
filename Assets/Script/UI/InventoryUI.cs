@@ -10,17 +10,17 @@ namespace Game.UI
     public class InventoryUI : MonoBehaviour
     {
         [Header("UI References")]
-        [Tooltip("인벤토리 전체 패널")]      [SerializeField] private GameObject panel;
+        [Tooltip("인벤토리 전체 패널")]
+        [SerializeField] private GameObject panel;
+
         [Tooltip("슬롯 프리팹")]
         [SerializeField] private GameObject slotPrefab;
+
         [Tooltip("슬롯을 담을 컨테이너")]
         [SerializeField] private Transform bagSlotParent;
 
-        [Header("Grid Settings")]
-        [Tooltip("가로 슬롯 개수")]
-        [SerializeField] private int bagColumns = 5;
-        [Tooltip("세로 슬롯 개수")]
-        [SerializeField] private int bagRows    = 5;
+        private int bagColumns = 5;
+        private int bagRows    = 5;
 
         private void Start()
         {

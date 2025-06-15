@@ -8,6 +8,7 @@ namespace Game.Managers
     {
         public event Action OnInventoryToggle;
 
+
         public Vector2 GetMovement()
         {
             return new Vector2(
@@ -21,5 +22,7 @@ namespace Game.Managers
             if (Input.GetKeyDown(KeyCode.I))
                 OnInventoryToggle?.Invoke();
         }
+
+        public bool GetAttackInput() => Input.GetKeyDown(KeyCode.Space);
     }
 }

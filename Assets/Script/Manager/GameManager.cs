@@ -1,5 +1,8 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using Game.Data;
+using Game.Player;
+using Game.System;
 
 namespace Game.Managers
 {
@@ -8,22 +11,21 @@ namespace Game.Managers
         public static GameManager Instance { get; private set; }
 
         [Header("Core Managers")]
-        [SerializeField] private InputManager inputManager;
-        [SerializeField] private InventoryManager inventoryManager;
-        [SerializeField] private UIManager uiManager;
-        // [SerializeField] private QuestManager questManager;
-        // [SerializeField] private MonsterManager monsterManager;
-        // [SerializeField] private SaveLoadManager saveLoadManager;
+        [SerializeField] private InputManager       inputManager;
+        [SerializeField] private InventoryManager   inventoryManager;
+        [SerializeField] private UIManager          uiManager;
+        [SerializeField] private GameDataManager    gameDataManager;
+        // [SerializeField] private QuestManager       questManager;
+        // [SerializeField] private MonsterManager     monsterManager;
 
-        public InputManager InputManager => inputManager;
-        public InventoryManager InventoryManager => inventoryManager;
-        public UIManager UIManager => uiManager;
+        public InputManager     InputManager    { get; private set; }
+        public InventoryManager InventoryManager{ get; private set; }
+        public UIManager        UIManager       { get; private set; }
+        public GameDataManager  GameDataManager { get; private set; }
 
-        [Header("Scene Transition")]
-        [Tooltip("다음 로드할 씬 이름")]
-        [SerializeField] private string nextSceneToLoad = "";
-        [Tooltip("씬 전환 후 플레이어 스폰 위치")]
-        [SerializeField] private Vector2 nextSpawnPosition = Vector2.zero;
+
+        private string  nextSceneToLoad   = "";
+        private Vector2 nextSpawnPosition = Vector2.zero;
 
         private void Awake()
         {
@@ -32,18 +34,28 @@ namespace Game.Managers
                 Instance = this;
                 DontDestroyOnLoad(gameObject);
 
-                // 씬 로드 이벤트 등록
                 SceneManager.sceneLoaded += OnSceneLoaded;
 
-                // Core 매니저들 생성 및 자식으로 배치
-                CreateManager(ref inputManager,  "InputManager");
-                CreateManager(ref inventoryManager, "InventoryManager");
-                CreateManager(ref uiManager,        "UIManager");
-                //CreateManager(ref questManager,     "QuestManager");
-                //CreateManager(ref monsterManager,   "MonsterManager");
-                //CreateManager(ref saveLoadManager,  "SaveLoadManager");
+                // Core 매니저들 인스턴스화 및 자식으로 배치
+                CreateManager(ref inputManager,       "InputManager");
+                CreateManager(ref inventoryManager,   "InventoryManager");
+                CreateManager(ref uiManager,          "UIManager");
+                CreateManager(ref gameDataManager,    "GameDataManager");
+                //CreateManager(ref questManager,      "QuestManager");
+                //CreateManager(ref monsterManager,    "MonsterManager");
 
-                inventoryManager.SetItemDatabase(Resources.Load<Game.Data.ItemDatabase>("ItemDatabase"));
+                InputManager     = inputManager;
+                InventoryManager = inventoryManager;
+                UIManager        = uiManager;
+                GameDataManager  = gameDataManager;
+
+                GameDataManager.Initialize();
+
+                var db = Resources.Load<ItemDatabase>("ItemDatabase");
+                if (db != null)
+                    inventoryManager.SetItemDatabase(db);
+                else
+                    Debug.LogWarning("[GameManager] ItemDatabase 로드 실패");
             }
             else
             {
@@ -60,15 +72,16 @@ namespace Game.Managers
         {
             if (!string.IsNullOrEmpty(nextSceneToLoad) && scene.name == nextSceneToLoad)
             {
-                var player = GameObject.FindGameObjectWithTag("Player");
-                if (player != null)
+                if (PlayerController.Instance != null)
                 {
-                    var pos = player.transform.position;
-                    player.transform.position = new Vector3(
+                    var player = PlayerController.Instance.transform;
+                    player.position = new Vector3(
                         nextSpawnPosition.x,
                         nextSpawnPosition.y,
-                        pos.z);
+                        player.position.z
+                    );
                 }
+
                 nextSceneToLoad   = "";
                 nextSpawnPosition = Vector2.zero;
             }
@@ -88,8 +101,7 @@ namespace Game.Managers
         {
             nextSceneToLoad   = sceneName;
             nextSpawnPosition = spawnPos;
-
-            Game.System.SceneTransition.Instance.FadeToScene(sceneName);
+            SceneTransition.Instance.FadeToScene(sceneName);
         }
     }
 }
