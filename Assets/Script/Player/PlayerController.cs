@@ -141,7 +141,7 @@ namespace Game.Player
 
 			animator.SetTrigger("Die");
 			Debug.Log("player died");
-			// enabled = false;
+			// 추후 사망화면 제작
 		}
     }
 }

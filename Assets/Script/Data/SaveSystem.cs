@@ -6,15 +6,11 @@ namespace Game.Data
 {
     public static class SaveSystem
     {
-        // 파일 경로 반환
         private static string GetPath(string fileName)
         {
             return Path.Combine(Application.persistentDataPath, fileName);
         }
 
-        /// <summary>
-        /// 데이터를 JSON으로 직렬화하여 파일에 저장합니다.
-        /// </summary>
         public static void Save<T>(string fileName, T data)
         {
             try
@@ -31,10 +27,6 @@ namespace Game.Data
             }
         }
 
-        /// <summary>
-        /// 파일에서 JSON을 읽어와 객체로 역직렬화합니다.
-        /// 파일이 없거나 파싱 오류 시 null을 반환합니다.
-        /// </summary>
         public static T Load<T>(string fileName) where T : class
         {
             string path = GetPath(fileName);

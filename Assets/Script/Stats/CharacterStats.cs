@@ -54,7 +54,6 @@ public class StatAttribute
         get => baseValue + bonusValue;
         set
         {
-            // hp.Current setter 예시용
             bonusValue = value - baseValue;
         }
     }

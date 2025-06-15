@@ -1,4 +1,3 @@
-// Assets/Scripts/System/SceneTransition.cs
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
@@ -14,7 +13,6 @@ namespace Game.System
         [Tooltip("페이드 인/아웃에 걸리는 시간 (초)")]
         [SerializeField] private float fadeDuration = 0.8f;
 
-        // 페이드에 사용할 전면 캔버스 이미지
         private Image fadeImage;
 
         private void Awake()
@@ -33,11 +31,9 @@ namespace Game.System
 
         private void CreateFadeUI()
         {
-            // 페이드용 캔버스 생성 및 DontDestroyOnLoad 처리
             var canvasGO = new GameObject("FadeCanvas");
             canvasGO.transform.SetParent(transform, false);
 
-            // UI 루트를 위한 RectTransform 추가
             var canvasRect = canvasGO.AddComponent<RectTransform>();
             canvasRect.anchorMin = Vector2.zero;
             canvasRect.anchorMax = Vector2.one;
@@ -50,7 +46,6 @@ namespace Game.System
             canvasGO.AddComponent<CanvasScaler>();
             canvasGO.AddComponent<GraphicRaycaster>();
 
-            // 페이드 이미지 생성
             var imageGO = new GameObject("FadeImage");
             imageGO.transform.SetParent(canvasGO.transform, false);
             fadeImage = imageGO.AddComponent<Image>();

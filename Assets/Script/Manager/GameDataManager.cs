@@ -70,16 +70,7 @@ namespace Game.Managers
             {
                 pc.transform.position = new Vector2(Data.player.posX, Data.player.posY);
             }
-
-            stats.OnDamaged -= OnPlayerStateChanged;
-            stats.OnDeath   -= OnPlayerStateChanged;
-
-            stats.OnDamaged += OnPlayerStateChanged;
-            stats.OnDeath   += OnPlayerStateChanged;
         }
-
-        private void OnPlayerStateChanged(int _) => SavePlayerStats();
-        private void OnPlayerStateChanged()       => SavePlayerStats();
 
         private void SavePlayerStats()
         {
@@ -97,6 +88,17 @@ namespace Game.Managers
             Data.player.posY = pos.y;
 
             SaveSystem.Save(SAVE_FILE, Data);
+        }
+
+        public  void UpdateRuntimeData()
+        {  
+            var stats = PlayerController.Instance.GetComponent<CharacterStats>();
+            Data.player.currentHP = stats.CurrentHP;
+            Data.player.maxHP     = stats.MaxHP;
+            // 위치 등도 같이 기록
+            var pos = PlayerController.Instance.transform.position;
+            Data.player.posX = pos.x;
+            Data.player.posY = pos.y;
         }
 
         public void ManualSave()

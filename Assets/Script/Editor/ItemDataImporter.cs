@@ -18,12 +18,10 @@ namespace Game.Editor
         [MenuItem("Tools/Import/Items From CSV & Update DB")]
         public static void ImportAndUpdateDatabase()
         {
-            // 1) CSV 파일 선택
             string csvPath = EditorUtility.OpenFilePanel("CSV 파일 선택", "", "csv");
             if (string.IsNullOrEmpty(csvPath))
                 return;
 
-            // 2) CSV 파일 읽기
             var lines = File.ReadAllLines(csvPath);
             if (lines.Length <= 1)
             {
@@ -31,11 +29,9 @@ namespace Game.Editor
                 return;
             }
 
-            // 3) 아이템 폴더 생성 또는 확인
             EnsureFolderExists(ItemsFolder);
             Debug.Log("[ItemDataImporter] CSV에서 아이템을 임포트합니다...");
 
-            // 4) 데이터 파싱 및 ScriptableObject 생성/업데이트
             foreach (var line in lines.Skip(1))
             {
                 if (string.IsNullOrWhiteSpace(line)) continue;
@@ -55,7 +51,6 @@ namespace Game.Editor
                 string assetPath = Path.Combine(ItemsFolder, id + ".asset");
                 var data = AssetDatabase.LoadAssetAtPath<ItemData>(assetPath) ?? ScriptableObject.CreateInstance<ItemData>();
 
-                // 필드 할당
                 data.Id           = id;
                 data.Name         = name;
                 data.Type         = (ItemType)Enum.Parse(typeof(ItemType), type);
@@ -65,7 +60,6 @@ namespace Game.Editor
                 data.Description  = desc;
                 data.Icon         = IconLoader.GetIcon(icon);
 
-                // 에셋 생성 또는 갱신
                 if (!File.Exists(assetPath))
                     AssetDatabase.CreateAsset(data, assetPath);
                 EditorUtility.SetDirty(data);
@@ -74,7 +68,6 @@ namespace Game.Editor
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
 
-            // 5) 데이터베이스 갱신
             UpdateDatabase();
             Debug.Log("[ItemDataImporter] 아이템 임포트 및 데이터베이스 업데이트 완료.");
         }

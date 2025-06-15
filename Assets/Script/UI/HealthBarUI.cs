@@ -14,7 +14,6 @@ namespace Game.UI
 
         private void Awake()
         {
-            // Inspector에 할당되지 않았다면, 자식에서 자동 할당
             if (fillImage == null)
             {
                 var fillTransform = transform.Find("HP_Fill");

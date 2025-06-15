@@ -7,9 +7,6 @@ namespace Game.Actors
     [RequireComponent(typeof(CharacterStats), typeof(Animator))]
     public class MonsterController : MonoBehaviour
     {
-        // [Header("참조할 플레이")]
-        // [SerializeField] private Transform      playerTransform;
-        // [SerializeField] private CharacterStats playerStats;
         private Transform      playerTransform;
         private CharacterStats playerStats;
 

@@ -6,43 +6,21 @@ using Game.Managers;
 
 namespace Game.UI
 {
-
     public class InventoryUI : MonoBehaviour
     {
         [Header("UI References")]
-        [Tooltip("인벤토리 전체 패널")]
         [SerializeField] private GameObject panel;
-
-        [Tooltip("슬롯 프리팹")]
         [SerializeField] private GameObject slotPrefab;
-
-        [Tooltip("슬롯을 담을 컨테이너")]
-        [SerializeField] private Transform bagSlotParent;
+        [SerializeField] private Transform  bagSlotParent;
 
         private int bagColumns = 5;
         private int bagRows    = 5;
 
-        private void Start()
-        {
-            panel.SetActive(false);
-            GameManager.Instance.InputManager.OnInventoryToggle += ToggleInventory;
-        }
-
-        private void OnDestroy()
-        {
-            if (GameManager.Instance != null)
-                GameManager.Instance.InputManager.OnInventoryToggle -= ToggleInventory;
-        }
-
-        private void ToggleInventory()
-        {
-            panel.SetActive(!panel.activeSelf);
-            if (panel.activeSelf)
-                RefreshBag();
-        }
-
         public void RefreshBag()
         {
+            if (panel != null && !panel.activeSelf)
+                return;
+
             foreach (Transform child in bagSlotParent)
                 Destroy(child.gameObject);
 
@@ -51,7 +29,7 @@ namespace Game.UI
 
             for (int i = 0; i < capacity; i++)
             {
-                var slot = Instantiate(slotPrefab, bagSlotParent);
+                var slot      = Instantiate(slotPrefab, bagSlotParent);
                 var iconImage = slot.transform.Find("Icon").GetComponent<Image>();
                 var countText = slot.transform.Find("Count").GetComponent<TextMeshProUGUI>();
                 var button    = slot.GetComponent<Button>();

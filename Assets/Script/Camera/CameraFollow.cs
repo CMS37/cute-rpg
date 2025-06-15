@@ -32,7 +32,6 @@ namespace Managers
             halfHeight = cam.orthographicSize;
             halfWidth  = halfHeight * cam.aspect;
 
-            // 초기 타겟 설정: PlayerController.Instance
             if (target == null && PlayerController.Instance != null)
                 target = PlayerController.Instance.transform;
         }

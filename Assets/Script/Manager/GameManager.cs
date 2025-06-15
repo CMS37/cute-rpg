@@ -36,7 +36,6 @@ namespace Game.Managers
 
                 SceneManager.sceneLoaded += OnSceneLoaded;
 
-                // Core 매니저들 인스턴스화 및 자식으로 배치
                 CreateManager(ref inputManager,       "InputManager");
                 CreateManager(ref inventoryManager,   "InventoryManager");
                 CreateManager(ref uiManager,          "UIManager");
@@ -99,6 +98,8 @@ namespace Game.Managers
 
         public void SetNextScene(string sceneName, Vector2 spawnPos)
         {
+            GameDataManager.Instance?.UpdateRuntimeData();
+
             nextSceneToLoad   = sceneName;
             nextSpawnPosition = spawnPos;
             SceneTransition.Instance.FadeToScene(sceneName);
