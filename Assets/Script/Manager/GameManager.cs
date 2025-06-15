@@ -15,13 +15,16 @@ namespace Game.Managers
         [SerializeField] private InventoryManager   inventoryManager;
         [SerializeField] private UIManager          uiManager;
         [SerializeField] private GameDataManager    gameDataManager;
+        [SerializeField] private EquipmentManager   equipmentManager;
+
         // [SerializeField] private QuestManager       questManager;
         // [SerializeField] private MonsterManager     monsterManager;
 
-        public InputManager     InputManager    { get; private set; }
-        public InventoryManager InventoryManager{ get; private set; }
-        public UIManager        UIManager       { get; private set; }
-        public GameDataManager  GameDataManager { get; private set; }
+        public InputManager     InputManager     { get; private set; }
+        public InventoryManager InventoryManager { get; private set; }
+        public UIManager        UIManager        { get; private set; }
+        public GameDataManager  GameDataManager  { get; private set; }
+        public EquipmentManager EquipmentManager { get; private set; }
 
 
         private string  nextSceneToLoad   = "";
@@ -40,6 +43,7 @@ namespace Game.Managers
                 CreateManager(ref inventoryManager,   "InventoryManager");
                 CreateManager(ref uiManager,          "UIManager");
                 CreateManager(ref gameDataManager,    "GameDataManager");
+                CreateManager(ref equipmentManager,   "EquipmentManager");
                 //CreateManager(ref questManager,      "QuestManager");
                 //CreateManager(ref monsterManager,    "MonsterManager");
 
@@ -47,6 +51,7 @@ namespace Game.Managers
                 InventoryManager = inventoryManager;
                 UIManager        = uiManager;
                 GameDataManager  = gameDataManager;
+                EquipmentManager = equipmentManager;
 
                 GameDataManager.Initialize();
 

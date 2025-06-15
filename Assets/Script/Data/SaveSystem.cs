@@ -17,9 +17,7 @@ namespace Game.Data
             {
                 string json = JsonUtility.ToJson(data, prettyPrint: true);
                 File.WriteAllText(GetPath(fileName), json);
-#if UNITY_EDITOR
                 Debug.Log($"[SaveSystem] Saved to {GetPath(fileName)}");
-#endif
             }
             catch (Exception e)
             {
@@ -32,9 +30,7 @@ namespace Game.Data
             string path = GetPath(fileName);
             if (!File.Exists(path))
             {
-#if UNITY_EDITOR
                 Debug.Log($"[SaveSystem] Load skipped, file not found: {path}");
-#endif
                 return null;
             }
 

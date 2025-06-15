@@ -1,6 +1,9 @@
 using UnityEngine;
 using UnityEngine.UI;
 using Game.Managers;
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
 namespace Game.Managers
 {
@@ -90,7 +93,11 @@ namespace Game.Managers
         public void QuitGame()
         {
             Debug.Log("Call EXIT GAME");
+#if UNITY_EDITOR
+            EditorApplication.isPlaying = false;
+#else
             Application.Quit();
+#endif
         }
     }
 }

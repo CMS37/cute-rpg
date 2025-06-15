@@ -9,6 +9,13 @@ namespace Game.Data
         Consumable
     }
 
+    public enum StatType
+    {
+        HP,
+        Attack,
+        Defense
+    }
+
     [CreateAssetMenu(menuName = "Game/Item Data", fileName = "New ItemData")]
     public class ItemData : ScriptableObject
     {
@@ -37,5 +44,6 @@ namespace Game.Data
         public int DefensePower { get => defensePower; set => defensePower = value; }
         public int MaxStack { get => maxStack; set => maxStack = value; }
         public string Description { get => description; set => description = value; }
+        
     }
 }
