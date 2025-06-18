@@ -4,9 +4,9 @@ using UnityEngine;
 
 public class MoveState : IState
 {
-    private MonsterController monster;
+    private MonsterBase monster;
 
-    public MoveState(MonsterController monster) { this.monster = monster; }
+    public MoveState(MonsterBase monster) { this.monster = monster; }
 
     public void Enter()
     {

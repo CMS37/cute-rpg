@@ -90,15 +90,7 @@ namespace Game.Managers
             if (inventoryMenuCanvas == null) return;
             isInventoryOpen = !isInventoryOpen;
             inventoryMenuCanvas.SetActive(isInventoryOpen);
-            // 인벤토리 UI 갱신은 이벤트 구독 방식으로 처리 권장
-        }
 
-        // 인벤토리 UI 갱신은 InventoryManager의 OnInventoryChanged 이벤트에서 처리 권장
-        public void RefreshInventoryUI()
-        {
-            var invUI = FindObjectOfType<Game.UI.InventoryUI>();
-            if (invUI != null)
-                invUI.RefreshBag();
         }
 
         public void SaveGame()

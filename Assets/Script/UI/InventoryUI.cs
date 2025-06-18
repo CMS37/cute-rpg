@@ -7,9 +7,6 @@ using Game.Data;
 
 namespace Game.UI
 {
-    /// <summary>
-    /// Inventory UI: draws bag slots and handles equip/unequip for a single weapon slot.
-    /// </summary>
     public class InventoryUI : MonoBehaviour
     {
         [Header("UI References")]        
@@ -47,15 +44,11 @@ namespace Game.UI
                 equipmentManager.onEquipChanged -= _ => RefreshBag();
         }
 
-        /// <summary>
-        /// Refresh the bag display.
-        /// </summary>
         public void RefreshBag()
         {
             if (panel != null && !panel.activeSelf)
                 return;
 
-            // Clear old slots
             foreach (Transform child in bagSlotParent)
                 Destroy(child.gameObject);
 

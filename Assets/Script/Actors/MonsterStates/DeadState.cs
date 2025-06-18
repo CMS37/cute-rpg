@@ -4,11 +4,11 @@ using Game.Actors;
 
 public class DeadState : IState
 {
-    private MonsterController monster;
+    private MonsterBase monster;
     private float deathTimer = 0f;
     private float deathDuration = 1.0f;
 
-    public DeadState(MonsterController monster)
+    public DeadState(MonsterBase monster)
     {
         this.monster = monster;
     }

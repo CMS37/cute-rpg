@@ -29,22 +29,6 @@ namespace Game.UI
                 equipButton.onClick.AddListener(OnEquipClicked);
         }
 
-        private void OnEnable()
-        {
-            inventoryManager.OnInventoryChanged += RefreshInventoryUI;
-        }
-
-        private void OnDisable()
-        {
-            inventoryManager.OnInventoryChanged -= RefreshInventoryUI;
-        }
-
-        public void OpenMenu()
-        {
-            inventoryPanel.SetActive(true);
-            RefreshInventoryUI();
-        }
-
         public void CloseMenu()
         {
             inventoryPanel.SetActive(false);
@@ -53,7 +37,6 @@ namespace Game.UI
         public void OnItemSelected(int index)
         {
             selectedIndex = index;
-            // 선택된 아이템에 따라 버튼 활성화 등 처리
         }
 
         private void OnUseClicked()
@@ -72,13 +55,8 @@ namespace Game.UI
             var item = inventoryManager.GetInventory()[selectedIndex].data;
             if (item.Type == ItemType.Weapon)
             {
-                equipmentManager.EquipToSlot(selectedIndex, 0); // 0번 슬롯 예시
+                equipmentManager.EquipToSlot(selectedIndex, 0);
             }
-        }
-
-        private void RefreshInventoryUI()
-        {
-            // 인벤토리 리스트 UI 갱신 로직 구현
         }
     }
 }

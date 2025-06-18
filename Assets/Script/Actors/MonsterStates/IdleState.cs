@@ -4,9 +4,9 @@ using UnityEngine;
 
 public class IdleState : IState
 {
-    private MonsterController monster;
+    private MonsterBase monster;
 
-    public IdleState(MonsterController monster) { this.monster = monster; }
+    public IdleState(MonsterBase monster) { this.monster = monster; }
 
     public void Enter()
     {

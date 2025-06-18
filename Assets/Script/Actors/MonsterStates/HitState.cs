@@ -3,11 +3,11 @@ using Game.Interfaces;
 
 public class HitState : IState
 {
-    private MonsterController monster;
+    private MonsterBase monster;
     private float hitTimer;
     private float hitDuration = 0.3f;
 
-    public HitState(MonsterController monster)
+    public HitState(MonsterBase monster)
     {
         this.monster = monster;
     }

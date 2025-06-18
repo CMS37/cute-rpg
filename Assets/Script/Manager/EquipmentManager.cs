@@ -24,7 +24,6 @@ namespace Game.Managers
         private void Awake()
         {
             equippedWeapons = new ItemData[slotCount];
-            // GameManager에서 참조를 받아 캐싱
             inventoryManager = GameManager.Instance.InventoryManager;
         }
 

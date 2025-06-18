@@ -114,7 +114,7 @@ namespace Game.Player
 
             foreach (var hit in hits)
             {
-                if (hit.TryGetComponent<MonsterController>(out var monster))
+                if (hit.TryGetComponent<MonsterBase>(out var monster))
                 {
                     var monsterStats = monster.GetComponent<CharacterStats>();
                     if (monsterStats != null)
@@ -153,7 +153,7 @@ namespace Game.Player
 
         public void OnDeathAnimationEnd()
         {
-            // 사망시 띄울 화면ui -> 지금은 임시로 일시정지 메뉴를 띄움
+            //사망시 띄울 UI -> 지금은 일단 일시정지 메뉴를 띄움
             uiManager.TogglePauseMenu(true);
         }
     }

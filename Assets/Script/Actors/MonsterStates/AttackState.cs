@@ -4,10 +4,10 @@ using Game.Actors;
 
 public class AttackState : IState
 {
-    private MonsterController monster;
+    private MonsterBase monster;
     private float attackTimer;
 
-    public AttackState(MonsterController monster)
+    public AttackState(MonsterBase monster)
     {
         this.monster = monster;
     }
@@ -23,14 +23,12 @@ public class AttackState : IState
     {
         attackTimer += Time.deltaTime;
 
-        // 공격 사거리 밖이면 즉시 MoveState로 전환
         if (!monster.InAttackRange())
         {
             monster.StateMachine.ChangeState(monster.MoveState);
             return;
         }
 
-        // 쿨타임이 끝나면 다시 공격
         if (attackTimer >= monster.AttackCooldown)
         {
             monster.StateMachine.ChangeState(monster.AttackState);

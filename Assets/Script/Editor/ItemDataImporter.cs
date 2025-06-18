@@ -51,7 +51,6 @@ namespace Game.Editor
                 string assetPath = Path.Combine(ItemsFolder, id + ".asset");
                 var data = AssetDatabase.LoadAssetAtPath<ItemData>(assetPath) ?? ScriptableObject.CreateInstance<ItemData>();
 
-                // 에디터에서만 set 허용
                 data.Id           = id;
                 data.Name         = name;
                 data.Type         = (ItemType)Enum.Parse(typeof(ItemType), type);
