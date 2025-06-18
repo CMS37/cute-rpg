@@ -14,6 +14,7 @@ namespace Game.Actors
         [SerializeField] protected float detectRange = 5f;
         [SerializeField] protected float attackRange = 1.2f;
         [SerializeField] protected float attackCooldown = 1f;
+        [SerializeField] protected float skillCooldown = 5f;
         [SerializeField] protected Tilemap groundTilemap;
         // [SerializeField] protected DropTable dropTable;
 
@@ -24,10 +25,12 @@ namespace Game.Actors
         public IState AttackState { get; protected set; }
         public IState HitState { get; protected set; }
         public IState DeadState { get; protected set; }
+        public IState SkillState { get; protected set; }
 
         protected Rigidbody2D rb;
         protected CharacterStats stats;
         protected Transform player;
+        protected float skillTimer = 0f;
         public bool isDead { get; protected set; }
 
         protected Vector2 minBounds, maxBounds;
@@ -65,6 +68,12 @@ namespace Game.Actors
         protected virtual void Update()
         {
             StateMachine?.Update();
+            skillTimer += Time.deltaTime;
+        }
+
+        protected virtual void FixedUpdate()
+        {
+            StateMachine?.FixedUpdate();
         }
 
         public virtual void ChasePlayer()
@@ -91,10 +100,17 @@ namespace Game.Actors
 
         public virtual void Attack()
         {
-            if (player == null || isDead) return;
+            DealDamageToPlayer();
+        }
+
+        public virtual void UseSkill() {}
+
+        public virtual void DealDamageToPlayer(float multiplier = 1f)
+        {
+            if (player == null) return;
             var playerStats = player.GetComponent<CharacterStats>();
             if (playerStats != null)
-                playerStats.TakeDamage(stats.attack.Current);
+                playerStats.TakeDamage(Mathf.RoundToInt(stats.attack.Current * multiplier));
         }
 
         public virtual void Flip()
@@ -134,6 +150,12 @@ namespace Game.Actors
 
         public float MoveSpeed => moveSpeed;
         public float AttackCooldown => attackCooldown;
+        public float SkillCooldown => skillCooldown;
+        public float SkillTimer
+        {
+            get => skillTimer;
+            set => skillTimer = value;
+        }
         // public DropTable DropTable => dropTable;
     }
 }

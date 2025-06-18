@@ -19,5 +19,7 @@ public class IdleState : IState
             monster.StateMachine.ChangeState(monster.MoveState);
     }
 
+    public void FixedUpdate() {}
+
     public void Exit() { }
 }

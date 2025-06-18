@@ -21,10 +21,11 @@ public class CharacterStats : MonoBehaviour
     public void TakeDamage(int rawDamage)
     {
         int dmg = Mathf.Max(0, rawDamage - defense.Current);
-        if (dmg <= 0) return;
 
-        currentHP -= dmg;
         OnDamaged?.Invoke(dmg);
+        
+        if (dmg <= 0) return;
+        currentHP -= dmg;
 
         Debug.Log($"{name} take {dmg}dmg, left {currentHP}hp");
         if (currentHP <= 0)

@@ -89,7 +89,6 @@ namespace Game.Camera
         {
             if (groundTilemap == null)
             {
-                Debug.LogError("CameraFollow: groundTilemap이 할당되지 않았습니다.");
                 return;
             }
 

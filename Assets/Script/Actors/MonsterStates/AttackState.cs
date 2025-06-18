@@ -23,6 +23,15 @@ public class AttackState : IState
     {
         attackTimer += Time.deltaTime;
 
+        if (monster.SkillState != null &&
+            monster.SkillTimer >= monster.SkillCooldown &&
+            monster.InAttackRange())
+        {
+            monster.SkillTimer = 0f;
+            monster.StateMachine.ChangeState(monster.SkillState);
+            return;
+        }
+
         if (!monster.InAttackRange())
         {
             monster.StateMachine.ChangeState(monster.MoveState);
@@ -35,5 +44,6 @@ public class AttackState : IState
         }
     }
 
+    public void FixedUpdate() {}
     public void Exit() { }
 }

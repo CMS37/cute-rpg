@@ -5,5 +5,6 @@ namespace Game.Interfaces
         void Enter();
         void Update();
         void Exit();
+        void FixedUpdate();
     }
 }

@@ -27,6 +27,8 @@ public class DeadState : IState
             Object.Destroy(monster.gameObject);
         }
     }
+    
+    public void FixedUpdate() {}
 
     public void Exit() { }
 }

@@ -17,5 +17,10 @@ namespace Game.System
 		{
 			currentState?.Update();
 		}
+
+		public void FixedUpdate()
+		{
+			currentState?.FixedUpdate();
+		}
 	}
 }

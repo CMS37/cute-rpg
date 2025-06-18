@@ -15,13 +15,16 @@ public class MoveState : IState
 
     public void Update()
     {
-        monster.ChasePlayer();
-
         if (!monster.CanSeePlayer())
             monster.StateMachine.ChangeState(monster.IdleState);
 
         if (monster.InAttackRange())
             monster.StateMachine.ChangeState(monster.AttackState);
+    }
+
+    public void FixedUpdate()
+    {
+        monster.ChasePlayer();
     }
 
     public void Exit() { }
