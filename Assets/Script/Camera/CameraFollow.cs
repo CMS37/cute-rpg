@@ -3,9 +3,9 @@ using UnityEngine.Tilemaps;
 using UnityEngine.SceneManagement;
 using Game.Player;
 
-namespace Managers
+namespace Game.Camera
 {
-    [RequireComponent(typeof(Camera))]
+    [RequireComponent(typeof(UnityEngine.Camera))]
     public class CameraFollow : MonoBehaviour
     {
         [Header("팔로우 대상")]
@@ -19,7 +19,7 @@ namespace Managers
         [Header("경계 추출할 Tilemap")]
         [SerializeField] private Tilemap groundTilemap;
 
-        private Camera cam;
+        private UnityEngine.Camera cam;
         private float halfHeight;
         private float halfWidth;
         private Vector2 minBounds;
@@ -28,12 +28,16 @@ namespace Managers
 
         private void Awake()
         {
-            cam = GetComponent<Camera>();
+            cam = GetComponent<UnityEngine.Camera>();
             halfHeight = cam.orthographicSize;
             halfWidth  = halfHeight * cam.aspect;
 
-            if (target == null && PlayerController.Instance != null)
-                target = PlayerController.Instance.transform;
+            if (target == null)
+            {
+                var player = FindObjectOfType<PlayerController>();
+                if (player != null)
+                    target = player.transform;
+            }
         }
 
         private void OnEnable()
@@ -48,24 +52,7 @@ namespace Managers
 
         private void Start()
         {
-            if (groundTilemap == null)
-            {
-                Debug.LogError("CameraFollow: groundTilemap이 할당되지 않았습니다.");
-                return;
-            }
-
-            var localBounds = groundTilemap.localBounds;
-            var tilemapPos  = groundTilemap.transform.position;
-            var worldMin    = localBounds.min + tilemapPos;
-            var worldMax    = localBounds.max + tilemapPos;
-            var cellSize    = groundTilemap.cellSize;
-
-            float extraShrinkX = 0.5f;
-            float shrinkX      = cellSize.x + extraShrinkX;
-            float shrinkY      = cellSize.y;
-
-            minBounds = new Vector2(worldMin.x + shrinkX, worldMin.y + shrinkY);
-            maxBounds = new Vector2(worldMax.x - shrinkX, worldMax.y - shrinkY);
+            CalculateBounds();
         }
 
         private void LateUpdate()
@@ -88,13 +75,36 @@ namespace Managers
 
         private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
         {
-            if (PlayerController.Instance != null)
-                target = PlayerController.Instance.transform;
+            var player = FindObjectOfType<PlayerController>();
+            if (player != null)
+                target = player.transform;
         }
 
         public void SetTarget(Transform t)
         {
             target = t;
+        }
+
+        private void CalculateBounds()
+        {
+            if (groundTilemap == null)
+            {
+                Debug.LogError("CameraFollow: groundTilemap이 할당되지 않았습니다.");
+                return;
+            }
+
+            var localBounds = groundTilemap.localBounds;
+            var tilemapPos  = groundTilemap.transform.position;
+            var worldMin    = localBounds.min + tilemapPos;
+            var worldMax    = localBounds.max + tilemapPos;
+            var cellSize    = groundTilemap.cellSize;
+
+            float extraShrinkX = 0.5f;
+            float shrinkX      = cellSize.x + extraShrinkX;
+            float shrinkY      = cellSize.y;
+
+            minBounds = new Vector2(worldMin.x + shrinkX, worldMin.y + shrinkY);
+            maxBounds = new Vector2(worldMax.x - shrinkX, worldMax.y - shrinkY);
         }
     }
 }

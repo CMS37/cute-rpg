@@ -12,6 +12,13 @@ namespace Game.World
         [Tooltip("획득할 수량")]
         [SerializeField] private int quantity = 1;
 
+        private InventoryManager inventoryManager;
+
+        private void Awake()
+        {
+            inventoryManager = GameManager.Instance.InventoryManager;
+        }
+
         private void Reset()
         {
             var col = GetComponent<Collider2D>();
@@ -23,7 +30,7 @@ namespace Game.World
             if (!other.CompareTag("Player"))
                 return;
 
-            InventoryManager.Instance.Add(itemId, quantity);
+            inventoryManager.Add(itemId, quantity);
 
             Destroy(gameObject);
         }

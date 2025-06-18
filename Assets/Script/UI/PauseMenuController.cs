@@ -6,10 +6,12 @@ namespace Game.UI
     public class PauseMenuController : MonoBehaviour
     {
         private InputManager inputManager;
+        private UIManager uiManager;
 
         private void Awake()
         {
             inputManager = GameManager.Instance.InputManager;
+            uiManager    = GameManager.Instance.UIManager;
         }
 
         private void OnEnable()
@@ -26,8 +28,7 @@ namespace Game.UI
 
         private void HandlePauseToggle()
         {
-            Debug.Log("Call PauseToggle");
-            UIManager.Instance?.TogglePauseMenu();
+            uiManager?.TogglePauseMenu();
         }
     }
 }

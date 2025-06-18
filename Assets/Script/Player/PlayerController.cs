@@ -28,19 +28,17 @@ namespace Game.Player
         private Vector2 minBounds;
         private Vector2 maxBounds;
 
-		private InputManager   inputManager;
+        private InputManager   inputManager;
+        private UIManager      uiManager;
         private CharacterStats stats;
         private float          nextAttackTime;
         private bool           facingRight = true;
-		private bool           isDead = false;
+        private bool           isDead = false;
 
         private void Awake()
         {
             if (Instance == null)
-            {
                 Instance = this;
-                DontDestroyOnLoad(gameObject);
-            }
             else if (Instance != this)
             {
                 Destroy(gameObject);
@@ -50,8 +48,9 @@ namespace Game.Player
             rb       = GetComponent<Rigidbody2D>();
             animator = GetComponent<Animator>();
             stats    = GetComponent<CharacterStats>();
-			inputManager = GameManager.Instance.InputManager;
-			stats.OnDeath += HandleDeath;
+            inputManager = GameManager.Instance.InputManager;
+            uiManager = GameManager.Instance.UIManager;
+            stats.OnDeath += HandleDeath;
         }
 
         private void Start()
@@ -77,6 +76,8 @@ namespace Game.Player
 
         private void Update()
         {
+            if (isDead) return;
+
             movement = inputManager.GetMovement();
             float speed = Mathf.Abs(movement.x) + Mathf.Abs(movement.y);
             animator.SetFloat("Speed", speed);
@@ -93,6 +94,8 @@ namespace Game.Player
 
         private void FixedUpdate()
         {
+            if (isDead) return;
+
             var raw  = rb.position + movement * moveSpeed * Time.fixedDeltaTime;
             var snap = new Vector2(
                 Mathf.Round(raw.x * ppu) / ppu,
@@ -112,16 +115,18 @@ namespace Game.Player
             foreach (var hit in hits)
             {
                 if (hit.TryGetComponent<MonsterController>(out var monster))
-				{
-					var monsterStats = monster.GetComponent<CharacterStats>();
-					if (monsterStats != null)
-                    	monsterStats.TakeDamage(stats.attack.Current);
-				}
+                {
+                    var monsterStats = monster.GetComponent<CharacterStats>();
+                    if (monsterStats != null)
+                        monsterStats.TakeDamage(stats.attack.Current);
+                }
             }
         }
 
         private void Flip()
         {
+            if (isDead) return;
+
             facingRight = !facingRight;
             var s       = transform.localScale;
             s.x *= -1;
@@ -134,14 +139,22 @@ namespace Game.Player
             Gizmos.DrawWireSphere(transform.position, attackRange);
         }
 
-		private void HandleDeath()
-		{
-			if (isDead) return;
-			isDead = true;
+        private void HandleDeath()
+        {
+            if (isDead) return;
+            isDead = true;
 
-			animator.SetTrigger("Die");
-			Debug.Log("player died");
-			// 추후 사망화면 제작
-		}
+            animator.SetTrigger("Die");
+            Debug.Log("player died");
+
+            inputManager.LockInput();
+
+        }
+
+        public void OnDeathAnimationEnd()
+        {
+            // 사망시 띄울 화면ui -> 지금은 임시로 일시정지 메뉴를 띄움
+            uiManager.TogglePauseMenu(true);
+        }
     }
 }

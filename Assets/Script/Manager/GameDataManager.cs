@@ -2,28 +2,23 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using Game.Player;
 using Game.Data;
+using System;
 
 namespace Game.Managers
 {
     public class GameDataManager : MonoBehaviour
     {
-        public static GameDataManager Instance { get; private set; }
         private const string SAVE_FILE = "save.json";
         public SaveData Data { get; private set; }
 
         private bool hasRestoredInitialPosition = false;
 
+        public event Action OnGameSaved;
+
         private void Awake()
         {
-            if (Instance == null)
-            {
-                Instance = this;
-
-                Data = SaveSystem.Load<SaveData>(SAVE_FILE) ?? CreateNewData();
-
-                SceneManager.sceneLoaded += OnSceneLoaded;
-            }
-            else Destroy(gameObject);
+            Data = SaveSystem.Load<SaveData>(SAVE_FILE) ?? CreateNewData();
+            SceneManager.sceneLoaded += OnSceneLoaded;
         }
 
         private void OnDestroy()
@@ -90,13 +85,15 @@ namespace Game.Managers
             SaveSystem.Save(SAVE_FILE, Data);
         }
 
-        public  void UpdateRuntimeData()
+        public void UpdateRuntimeData()
         {  
-            var stats = PlayerController.Instance.GetComponent<CharacterStats>();
+            var pc = PlayerController.Instance;
+            if (pc == null) return;
+
+            var stats = pc.GetComponent<CharacterStats>();
             Data.player.currentHP = stats.CurrentHP;
             Data.player.maxHP     = stats.MaxHP;
-            // 위치 등도 같이 기록
-            var pos = PlayerController.Instance.transform.position;
+            var pos = pc.transform.position;
             Data.player.posX = pos.x;
             Data.player.posY = pos.y;
         }
@@ -105,6 +102,7 @@ namespace Game.Managers
         {
             SavePlayerStats();
             Debug.Log("[GameDataManager] Game saved.");
+            OnGameSaved?.Invoke();
         }
     }
 }

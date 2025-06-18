@@ -7,8 +7,6 @@ namespace Game.Managers
 {
     public class EquipmentManager : MonoBehaviour
     {
-        public static EquipmentManager Instance { get; private set; }
-
         [Header("Equip Slot Count")]
         [Tooltip("Number of weapon slots available for equipping")]  
         [SerializeField] private int slotCount = 7;
@@ -21,17 +19,13 @@ namespace Game.Managers
 
         public event Action<int> onEquipChanged;
 
+        private InventoryManager inventoryManager;
+
         private void Awake()
         {
-            if (Instance == null)
-            {
-                Instance = this;
-                equippedWeapons = new ItemData[slotCount];
-            }
-            else
-            {
-                Destroy(gameObject);
-            }
+            equippedWeapons = new ItemData[slotCount];
+            // GameManager에서 참조를 받아 캐싱
+            inventoryManager = GameManager.Instance.InventoryManager;
         }
 
         private void EnsureStats()
@@ -44,7 +38,7 @@ namespace Game.Managers
         {
             if (equipSlot != 0) return;
 
-            var inv = InventoryManager.Instance.GetInventory();
+            var inv = inventoryManager.GetInventory();
             if (inventoryIndex < 0 || inventoryIndex >= inv.Count) return;
             var (data, _) = inv[inventoryIndex];
             if (data.Type != ItemType.Weapon) return;

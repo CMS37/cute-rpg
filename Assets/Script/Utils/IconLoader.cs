@@ -9,6 +9,9 @@ namespace Game.Utils
 
         public static Sprite GetIcon(string iconName)
         {
+            if (string.IsNullOrEmpty(iconName))
+                return null;
+
             if (cache == null)
             {
                 cache = new Dictionary<string, Sprite>();

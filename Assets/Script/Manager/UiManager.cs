@@ -1,6 +1,5 @@
 using UnityEngine;
 using UnityEngine.UI;
-using Game.Managers;
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
@@ -9,24 +8,15 @@ namespace Game.Managers
 {
     public class UIManager : MonoBehaviour
     {
-        public static UIManager Instance { get; private set; }
-
         private GameObject pauseMenuCanvas;
         private GameObject inventoryMenuCanvas;
         private bool isPaused;
         private bool isInventoryOpen;
+        private InputManager inputManager;
 
         private void Awake()
         {
-            if (Instance == null)
-            {
-                Instance = this;
-            }
-            else
-            {
-                Destroy(gameObject);
-                return;
-            }
+            inputManager = GameManager.Instance.InputManager;
 
             var root = GameManager.Instance.transform.Find("CanvasContainer");
             if (root == null)
@@ -38,8 +28,7 @@ namespace Game.Managers
             pauseMenuCanvas     = root.Find("PauseMenuCanvas")?.gameObject;
             inventoryMenuCanvas = root.Find("InventoryMenuCanvas")?.gameObject;
 
-
-            if (pauseMenuCanvas    != null)
+            if (pauseMenuCanvas != null)
             {
                 pauseMenuCanvas.SetActive(false);
 
@@ -55,15 +44,43 @@ namespace Game.Managers
                 else
                     Debug.LogWarning("UIManager: PauseMenuCanvas 내 QuitButton을 찾을 수 없습니다.");
             }
-            if (inventoryMenuCanvas!= null) inventoryMenuCanvas.SetActive(false);
+            if (inventoryMenuCanvas != null) inventoryMenuCanvas.SetActive(false);
 
             Time.timeScale = 1f;
         }
 
+        private void OnEnable()
+        {
+            if (inputManager != null)
+                inputManager.OnInventoryToggle += HandleInventoryToggle;
+        }
+
+        private void OnDisable()
+        {
+            if (inputManager != null)
+                inputManager.OnInventoryToggle -= HandleInventoryToggle;
+        }
+
+        private void HandleInventoryToggle()
+        {
+            ToggleInventoryMenu();
+        }
+
         public void TogglePauseMenu()
         {
+            if (inputManager != null && inputManager.IsInputLocked())
+                return;
+
             if (pauseMenuCanvas == null) return;
             isPaused = !isPaused;
+            pauseMenuCanvas.SetActive(isPaused);
+            Time.timeScale = isPaused ? 0f : 1f;
+        }
+
+        public void TogglePauseMenu(bool forceOpen)
+        {
+            if (pauseMenuCanvas == null) return;
+            isPaused = forceOpen ? true : !isPaused;
             pauseMenuCanvas.SetActive(isPaused);
             Time.timeScale = isPaused ? 0f : 1f;
         }
@@ -73,10 +90,10 @@ namespace Game.Managers
             if (inventoryMenuCanvas == null) return;
             isInventoryOpen = !isInventoryOpen;
             inventoryMenuCanvas.SetActive(isInventoryOpen);
-            if (isInventoryOpen)
-                RefreshInventoryUI();
+            // 인벤토리 UI 갱신은 이벤트 구독 방식으로 처리 권장
         }
 
+        // 인벤토리 UI 갱신은 InventoryManager의 OnInventoryChanged 이벤트에서 처리 권장
         public void RefreshInventoryUI()
         {
             var invUI = FindObjectOfType<Game.UI.InventoryUI>();
@@ -87,7 +104,7 @@ namespace Game.Managers
         public void SaveGame()
         {
             Debug.Log("Call SaveGame");
-            GameDataManager.Instance?.ManualSave();
+            GameManager.Instance.GameDataManager?.ManualSave();
         }
 
         public void QuitGame()

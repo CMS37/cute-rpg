@@ -20,6 +20,33 @@ namespace Game.UI
         private int bagColumns = 5;
         private int bagRows    = 5;
 
+        private InventoryManager inventoryManager;
+        private EquipmentManager equipmentManager;
+
+        private void Awake()
+        {
+            inventoryManager = GameManager.Instance.InventoryManager;
+            equipmentManager = GameManager.Instance.EquipmentManager;
+        }
+
+        private void OnEnable()
+        {
+            if (inventoryManager != null)
+                inventoryManager.OnInventoryChanged += RefreshBag;
+            if (equipmentManager != null)
+                equipmentManager.onEquipChanged += _ => RefreshBag();
+
+            RefreshBag();
+        }
+
+        private void OnDisable()
+        {
+            if (inventoryManager != null)
+                inventoryManager.OnInventoryChanged -= RefreshBag;
+            if (equipmentManager != null)
+                equipmentManager.onEquipChanged -= _ => RefreshBag();
+        }
+
         /// <summary>
         /// Refresh the bag display.
         /// </summary>
@@ -32,8 +59,7 @@ namespace Game.UI
             foreach (Transform child in bagSlotParent)
                 Destroy(child.gameObject);
 
-            var invList = InventoryManager.Instance.GetInventory();
-            var equipMgr = EquipmentManager.Instance;
+            var invList = inventoryManager.GetInventory();
             int capacity = bagColumns * bagRows;
 
             for (int i = 0; i < capacity; i++)
@@ -52,18 +78,16 @@ namespace Game.UI
 
                     if (data.Type == ItemType.Weapon)
                     {
-                        bool isEquipped = (equipMgr.EquippedInventoryIndex == i);
+                        bool isEquipped = (equipmentManager.EquippedInventoryIndex == i);
                         countText.text  = isEquipped ? "E" : string.Empty;
 
                         int invIndex = i;
-                        button.onClick.RemoveAllListeners();
                         button.onClick.AddListener(() =>
                         {
-                            if (equipMgr.EquippedInventoryIndex == invIndex)
-                                equipMgr.UnequipSlot(0);
+                            if (equipmentManager.EquippedInventoryIndex == invIndex)
+                                equipmentManager.UnequipSlot(0);
                             else
-                                equipMgr.EquipToSlot(invIndex, 0);
-                            RefreshBag();
+                                equipmentManager.EquipToSlot(invIndex, 0);
                         });
                     }
                     else
@@ -72,8 +96,7 @@ namespace Game.UI
                         int invIndex = i;
                         button.onClick.AddListener(() =>
                         {
-                            InventoryManager.Instance.Use(data.Id);
-                            RefreshBag();
+                            inventoryManager.Use(data.Id);
                         });
                     }
                 }

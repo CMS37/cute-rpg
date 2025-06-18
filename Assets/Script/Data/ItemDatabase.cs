@@ -33,6 +33,17 @@ namespace Game.Data
             lookup.TryGetValue(id, out var item);
             return item;
         }
-        public List<ItemData> AllItems { get => allItems; set => allItems = value; }
+
+        public IReadOnlyList<ItemData> AllItems
+        {
+            get => allItems;
+        #if UNITY_EDITOR
+            set
+            {
+                allItems = value is List<ItemData> list ? list : new List<ItemData>(value);
+                InitializeLookup();
+            }
+        #endif
+        }
     }
 }

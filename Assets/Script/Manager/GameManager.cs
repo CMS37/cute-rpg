@@ -3,6 +3,7 @@ using UnityEngine.SceneManagement;
 using Game.Data;
 using Game.Player;
 using Game.System;
+using System;
 
 namespace Game.Managers
 {
@@ -11,23 +12,21 @@ namespace Game.Managers
         public static GameManager Instance { get; private set; }
 
         [Header("Core Managers")]
-        [SerializeField] private InputManager       inputManager;
-        [SerializeField] private InventoryManager   inventoryManager;
-        [SerializeField] private UIManager          uiManager;
-        [SerializeField] private GameDataManager    gameDataManager;
-        [SerializeField] private EquipmentManager   equipmentManager;
+        [SerializeField] private InputManager inputManager;
+        [SerializeField] private InventoryManager inventoryManager;
+        [SerializeField] private UIManager uiManager;
+        [SerializeField] private GameDataManager gameDataManager;
+        [SerializeField] private EquipmentManager equipmentManager;
 
-        // [SerializeField] private QuestManager       questManager;
-        // [SerializeField] private MonsterManager     monsterManager;
+        public InputManager InputManager => inputManager;
+        public InventoryManager InventoryManager => inventoryManager;
+        public UIManager UIManager => uiManager;
+        public GameDataManager GameDataManager => gameDataManager;
+        public EquipmentManager EquipmentManager => equipmentManager;
 
-        public InputManager     InputManager     { get; private set; }
-        public InventoryManager InventoryManager { get; private set; }
-        public UIManager        UIManager        { get; private set; }
-        public GameDataManager  GameDataManager  { get; private set; }
-        public EquipmentManager EquipmentManager { get; private set; }
+        public event Action<string> OnSceneChanged;
 
-
-        private string  nextSceneToLoad   = "";
+        private string nextSceneToLoad = "";
         private Vector2 nextSpawnPosition = Vector2.zero;
 
         private void Awake()
@@ -39,21 +38,13 @@ namespace Game.Managers
 
                 SceneManager.sceneLoaded += OnSceneLoaded;
 
-                CreateManager(ref inputManager,       "InputManager");
-                CreateManager(ref inventoryManager,   "InventoryManager");
-                CreateManager(ref uiManager,          "UIManager");
-                CreateManager(ref gameDataManager,    "GameDataManager");
-                CreateManager(ref equipmentManager,   "EquipmentManager");
-                //CreateManager(ref questManager,      "QuestManager");
-                //CreateManager(ref monsterManager,    "MonsterManager");
+                CreateManager(ref inputManager, "InputManager");
+                CreateManager(ref inventoryManager, "InventoryManager");
+                CreateManager(ref uiManager, "UIManager");
+                CreateManager(ref gameDataManager, "GameDataManager");
+                CreateManager(ref equipmentManager, "EquipmentManager");
 
-                InputManager     = inputManager;
-                InventoryManager = inventoryManager;
-                UIManager        = uiManager;
-                GameDataManager  = gameDataManager;
-                EquipmentManager = equipmentManager;
-
-                GameDataManager.Initialize();
+                gameDataManager.Initialize();
 
                 var db = Resources.Load<ItemDatabase>("ItemDatabase");
                 if (db != null)
@@ -86,8 +77,10 @@ namespace Game.Managers
                     );
                 }
 
-                nextSceneToLoad   = "";
+                nextSceneToLoad = "";
                 nextSpawnPosition = Vector2.zero;
+
+                OnSceneChanged?.Invoke(scene.name);
             }
         }
 
@@ -103,9 +96,9 @@ namespace Game.Managers
 
         public void SetNextScene(string sceneName, Vector2 spawnPos)
         {
-            GameDataManager.Instance?.UpdateRuntimeData();
+            gameDataManager?.UpdateRuntimeData();
 
-            nextSceneToLoad   = sceneName;
+            nextSceneToLoad = sceneName;
             nextSpawnPosition = spawnPos;
             SceneTransition.Instance.FadeToScene(sceneName);
         }

@@ -1,110 +1,163 @@
 using UnityEngine;
-using UnityEngine.SceneManagement;
+using Game.Interfaces;
+using Game.System;
 using Game.Player;
+using UnityEngine.Tilemaps;
 
 namespace Game.Actors
 {
-    [RequireComponent(typeof(CharacterStats), typeof(Animator))]
+    [RequireComponent(typeof(Rigidbody2D), typeof(Animator), typeof(CharacterStats))]
     public class MonsterController : MonoBehaviour
     {
-        private Transform      playerTransform;
-        private CharacterStats playerStats;
+        [Header("AI 세팅")]
+        [SerializeField] private float moveSpeed = 3f;
+        [SerializeField] private float detectRange = 5f;
+        [SerializeField] private float attackRange = 1.2f;
+        [SerializeField] private float attackCooldown = 1f;
+        [SerializeField] private Tilemap groundTilemap;
 
-        [Header("몬스터 AI 및 전투 설정")]
-        [SerializeField] private float agroRange      = 5f;
-        [SerializeField] private float chaseSpeed     = 2f;
-        [SerializeField] private float attackRange    = 1.5f;
-        [SerializeField] private float attackCooldown = 2f;
+        public Animator animator { get; private set; }
+        public StateMachine StateMachine { get; private set; }
+        public IState IdleState { get; private set; }
+        public IState MoveState { get; private set; }
+        public IState DeadState { get; private set; }
+        public IState AttackState { get; private set; }
+        public IState HitState { get; private set; }
 
+        public float MoveSpeed => moveSpeed;
+        public float AttackCooldown => attackCooldown;
+
+        private Rigidbody2D rb;
         private CharacterStats stats;
-        private Animator       animator;
-        private float          nextAttackTime;
-        private bool           isDead;
+        private Transform player;
+        public bool isDead { get; private set; }
+
+        private Vector2 minBounds, maxBounds;
+        private float ppu = 16f;
+        private Vector2? nextPosition = null;
 
         private void Awake()
         {
-            BindPlayer();
-            SceneManager.sceneLoaded += OnSceneLoaded;
-
-            stats    = GetComponent<CharacterStats>();
+            rb = GetComponent<Rigidbody2D>();
             animator = GetComponent<Animator>();
-            stats.OnDamaged += _ => animator.SetTrigger("Hit");
-            stats.OnDeath   += HandleDeath;
+            stats = GetComponent<CharacterStats>();
+            stats.OnDeath += OnDeath;
+            stats.OnDamaged += OnDamaged;
+
+            StateMachine = new StateMachine();
+            IdleState = new IdleState(this);
+            MoveState = new MoveState(this);
+            DeadState = new DeadState(this);
+            AttackState = new AttackState(this);
+            HitState = new HitState(this);
         }
 
-        private void OnDestroy()
+        private void Start()
         {
-            SceneManager.sceneLoaded -= OnSceneLoaded;
-        }
+            TryFindPlayer();
 
-        private void OnSceneLoaded(Scene s, LoadSceneMode m)
-        {   
-            BindPlayer();
-        }
-
-        private void BindPlayer()
-        {
-            var pc = PlayerController.Instance;
-            if (pc != null)
+            if (groundTilemap != null)
             {
-                playerTransform = pc.transform;
-                playerStats     = pc.GetComponent<CharacterStats>();
-                enabled = true;
+                var local = groundTilemap.localBounds;
+                var pos = groundTilemap.transform.position;
+                var worldMin = local.min + pos;
+                var worldMax = local.max + pos;
+                var cell = groundTilemap.cellSize;
+                float shrinkX = cell.x + 0.5f;
+                float shrinkY = cell.y;
+                minBounds = new Vector2(worldMin.x + shrinkX, worldMin.y + shrinkY);
+                maxBounds = new Vector2(worldMax.x - shrinkX, worldMax.y - shrinkY);
             }
-            else
-            {
-                playerTransform = null;
-                playerStats     = null;
-                enabled = false;
-            }
+            Debug.Log($"minBounds: {minBounds}, maxBounds: {maxBounds}");
+            StateMachine.ChangeState(IdleState);
         }
 
         private void Update()
         {
-            if (isDead) return;
+            if (player == null)
+                TryFindPlayer();
+            StateMachine.Update();
+        }
 
-            float dist = Vector2.Distance(transform.position, playerTransform.position);
+        private void TryFindPlayer()
+        {
+            var playerObj = FindObjectOfType<PlayerController>();
+            if (playerObj != null)
+                player = playerObj.transform;
+        }
+        public void ChasePlayer()
+        {
+            if (player == null || isDead) return;
+        
+            Vector2 dir = (player.position - transform.position).normalized;
+            Vector2 raw = rb.position + dir * moveSpeed * Time.deltaTime;
+            Vector2 snap = new Vector2(
+                Mathf.Round(raw.x * ppu) / ppu,
+                Mathf.Round(raw.y * ppu) / ppu);
 
-            if (dist <= agroRange && dist > attackRange)
+            snap.x = Mathf.Clamp(snap.x, minBounds.x, maxBounds.x);
+            snap.y = Mathf.Clamp(snap.y, minBounds.y, maxBounds.y);
+
+            Debug.Log($"dir: {dir}, player: {player.position}, slime: {transform.position}");
+            nextPosition = snap;
+            animator.SetFloat("Speed", MoveSpeed);
+
+            if (dir.x > 0 && transform.localScale.x < 0)
+                Flip();
+            else if (dir.x < 0 && transform.localScale.x > 0)
+                Flip();
+        }
+
+        private void FixedUpdate()
+        {
+            if (nextPosition.HasValue)
             {
-                animator.SetFloat("Speed", 1f);
-                transform.position = Vector2.MoveTowards(
-                    transform.position,
-                    playerTransform.position,
-                    chaseSpeed * Time.deltaTime
-                );
-            }
-            else animator.SetFloat("Speed", 0f);
-
-            if (dist <= attackRange && Time.time >= nextAttackTime)
-            {
-                int raw = stats.attack.Current;
-                int dmg = Mathf.Max(0, raw - playerStats.defense.Current);
-                Debug.Log($"[Monster] rawAttack={raw}, playerDef={playerStats.defense.Current}, dmg={dmg}");
-                playerStats.TakeDamage(stats.attack.Current);
-                nextAttackTime = Time.time + attackCooldown;
+                rb.MovePosition(nextPosition.Value);
+                nextPosition = null;
             }
         }
 
-        private void HandleDeath()
+        public void Attack()
+        {
+            if (player == null || isDead) return;
+            var playerStats = player.GetComponent<CharacterStats>();
+            if (playerStats != null)
+                playerStats.TakeDamage(stats.attack.Current);
+        }
+
+        public void Flip()
+        {
+            if (isDead) return;
+            var s = transform.localScale;
+            s.x *= -1;
+            transform.localScale = s;
+        }
+
+        public bool CanSeePlayer()
+        {
+            if (player == null || isDead) return false;
+            float dist = Vector2.Distance(transform.position, player.position);
+            return dist <= detectRange;
+        }
+
+        public bool InAttackRange()
+        {
+            if (player == null || isDead) return false;
+            float dist = Vector2.Distance(transform.position, player.position);
+            return dist <= attackRange;
+        }
+
+        private void OnDamaged(int dmg)
+        {
+            if (isDead) return;
+            StateMachine.ChangeState(HitState);
+        }
+
+        private void OnDeath()
         {
             if (isDead) return;
             isDead = true;
-
-            animator.SetTrigger("Die");
-            var col = GetComponent<Collider2D>();
-            if (col != null) col.enabled = false;
-            enabled = false;
-            Destroy(gameObject, 1f);
-        }
-
-        //범위 확인 테스트용
-        private void OnDrawGizmosSelected()
-        {
-            Gizmos.color = Color.yellow;
-            Gizmos.DrawWireSphere(transform.position, agroRange);
-            Gizmos.color = Color.red;
-            Gizmos.DrawWireSphere(transform.position, attackRange);
+            StateMachine.ChangeState(DeadState);
         }
     }
 }

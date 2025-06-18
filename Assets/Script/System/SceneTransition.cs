@@ -12,8 +12,11 @@ namespace Game.System
         [Header("Fade Settings")]
         [Tooltip("페이드 인/아웃에 걸리는 시간 (초)")]
         [SerializeField] private float fadeDuration = 0.8f;
+        [Tooltip("페이드 색상")]
+        [SerializeField] private Color fadeColor = Color.black;
 
         private Image fadeImage;
+        private bool isFading = false;
 
         private void Awake()
         {
@@ -49,7 +52,7 @@ namespace Game.System
             var imageGO = new GameObject("FadeImage");
             imageGO.transform.SetParent(canvasGO.transform, false);
             fadeImage = imageGO.AddComponent<Image>();
-            fadeImage.color = new Color(0f, 0f, 0f, 0f);
+            fadeImage.color = new Color(fadeColor.r, fadeColor.g, fadeColor.b, 0f);
 
             var rt = fadeImage.rectTransform;
             rt.anchorMin = Vector2.zero;
@@ -60,6 +63,7 @@ namespace Game.System
 
         public void FadeToScene(string sceneName)
         {
+            if (isFading) return;
             Debug.Log($"[SceneTransition] FadeToScene called for scene: {sceneName}");
             if (fadeImage == null)
             {
@@ -72,11 +76,13 @@ namespace Game.System
 
         private IEnumerator FadeRoutine(string sceneName)
         {
+            isFading = true;
             yield return Fade(0f, 1f);
             SceneManager.LoadScene(sceneName);
             yield return null;
             yield return new WaitForSeconds(0.2f);
             yield return Fade(1f, 0f);
+            isFading = false;
         }
 
         private IEnumerator Fade(float from, float to)
@@ -92,7 +98,6 @@ namespace Game.System
             }
             color.a = to;
             fadeImage.color = color;
-            yield break;
         }
     }
 }

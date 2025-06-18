@@ -36,14 +36,61 @@ namespace Game.Data
         [TextArea]
         [SerializeField] private string description;
 
-        public string Id { get => id; set => id = value; }
-        public string Name { get => itemName; set => itemName = value; }
-        public ItemType Type { get => type; set => type = value; }
-        public Sprite Icon { get => icon; set => icon = value; }
-        public int AttackPower { get => attackPower; set => attackPower = value; }
-        public int DefensePower { get => defensePower; set => defensePower = value; }
-        public int MaxStack { get => maxStack; set => maxStack = value; }
-        public string Description { get => description; set => description = value; }
-        
+        public string Id
+        {
+            get => id;
+    #if UNITY_EDITOR
+            set => id = value;
+    #endif
+        }
+        public string Name
+        {
+            get => itemName;
+    #if UNITY_EDITOR
+            set => itemName = value;
+    #endif
+        }
+        public ItemType Type
+        {
+            get => type;
+    #if UNITY_EDITOR
+            set => type = value;
+    #endif
+        }
+        public Sprite Icon
+        {
+            get => icon;
+    #if UNITY_EDITOR
+            set => icon = value;
+    #endif
+        }
+        public int AttackPower
+        {
+            get => attackPower;
+    #if UNITY_EDITOR
+            set => attackPower = value;
+    #endif
+        }
+        public int DefensePower
+        {
+            get => defensePower;
+    #if UNITY_EDITOR
+            set => defensePower = value;
+    #endif
+        }
+        public int MaxStack
+        {
+            get => maxStack;
+    #if UNITY_EDITOR
+            set => maxStack = value;
+    #endif
+        }
+        public string Description
+        {
+            get => description;
+    #if UNITY_EDITOR
+            set => description = value;
+    #endif
+        }
     }
 }

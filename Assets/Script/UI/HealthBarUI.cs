@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
@@ -28,16 +29,13 @@ namespace Game.UI
         private void OnEnable()
         {
             SceneManager.sceneLoaded += OnSceneLoaded;
+            BindToPlayer();
         }
 
         private void OnDisable()
         {
             SceneManager.sceneLoaded -= OnSceneLoaded;
-            if (playerStats != null)
-            {
-                playerStats.OnDamaged -= OnPlayerDamaged;
-                playerStats.OnDeath   -= OnPlayerDeath;
-            }
+            UnbindPlayerEvents();
         }
 
         private void Start()
@@ -54,18 +52,30 @@ namespace Game.UI
 
         private void BindToPlayer()
         {
+            UnbindPlayerEvents();
+
+            var pc = PlayerController.Instance;
+            if (pc == null)
+            {
+                playerStats = null;
+                return;
+            }
+
+            playerStats = pc.GetComponent<CharacterStats>();
+            if (playerStats != null)
+            {
+                playerStats.OnDamaged += OnPlayerDamaged;
+                playerStats.OnDeath   += OnPlayerDeath;
+            }
+        }
+
+        private void UnbindPlayerEvents()
+        {
             if (playerStats != null)
             {
                 playerStats.OnDamaged -= OnPlayerDamaged;
                 playerStats.OnDeath   -= OnPlayerDeath;
             }
-
-            var pc = PlayerController.Instance;
-            if (pc == null) return;
-
-            playerStats = pc.GetComponent<CharacterStats>();
-            playerStats.OnDamaged += OnPlayerDamaged;
-            playerStats.OnDeath   += OnPlayerDeath;
         }
 
         private void OnPlayerDamaged(int dmg)
@@ -79,7 +89,7 @@ namespace Game.UI
                 fillImage.fillAmount = 0f;
         }
 
-        private void UpdateHealthBar()
+        public void UpdateHealthBar()
         {
             if (fillImage == null || playerStats == null) return;
             float ratio = (float)playerStats.CurrentHP / playerStats.MaxHP;

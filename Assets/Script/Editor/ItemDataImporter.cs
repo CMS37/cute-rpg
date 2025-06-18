@@ -43,14 +43,15 @@ namespace Game.Editor
                 string name = cols[1].Trim();
                 string type = cols[2].Trim();
                 string icon = cols[3].Trim();
-                int atk     = int.Parse(cols[4]);
-                int def     = int.Parse(cols[5]);
-                int maxSt   = int.Parse(cols[6]);
+                int atk     = int.TryParse(cols[4], out var a) ? a : 0;
+                int def     = int.TryParse(cols[5], out var d) ? d : 0;
+                int maxSt   = int.TryParse(cols[6], out var m) ? m : 1;
                 string desc = cols[7].Trim();
 
                 string assetPath = Path.Combine(ItemsFolder, id + ".asset");
                 var data = AssetDatabase.LoadAssetAtPath<ItemData>(assetPath) ?? ScriptableObject.CreateInstance<ItemData>();
 
+                // 에디터에서만 set 허용
                 data.Id           = id;
                 data.Name         = name;
                 data.Type         = (ItemType)Enum.Parse(typeof(ItemType), type);
